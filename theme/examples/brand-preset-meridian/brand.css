@@ -1,0 +1,18 @@
+/* keel-docs-theme · brand-preset-example/brand.css
+   REBRAND PROOF — an example second preset ("Meridian", terracotta accent).
+   Applying it = copying this file to guide/brand/brand.css and swapping the logo.
+   NOTHING in _theme/ changes. Contrast contract verified in both modes.
+   Version: __THEME_VERSION__ */
+:root{
+  --brand-accent:#A6432A;          /* terracotta — 5.68:1 on #FAF7F1, 5.97:1 on #FFFDF8 */
+  --brand-accent-contrast:#FFFFFF; /* 6.07:1 on the accent fill */
+  --brand-accent-soft:#F6E7E0;
+  --brand-logo-w:28px; --brand-logo-h:28px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --brand-accent:#E0906F;          /* 7.29:1 on #17150F, 6.86:1 on #1E1B14 */
+    --brand-accent-contrast:#17150F; /* 7.29:1 on the accent fill */
+    --brand-accent-soft:#2C1D16;
+  }
+}

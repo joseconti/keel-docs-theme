@@ -1,0 +1,64 @@
+/* ============================================================================
+   keel-docs-theme · brand/brand.css   —  THE brand customization surface
+   ----------------------------------------------------------------------------
+   This is the ONLY file (plus the logo files in this folder and the product
+   strings/links passed to the strings file) that a project may edit to adopt
+   its brand. Rebranding == replacing this brand/ folder. The neutral core in
+   _theme/ is NEVER edited per project.
+
+   What a project may set here — and NOTHING else:
+     --brand-accent           accent color (links, active states, focus tint base)
+     --brand-accent-contrast  text/icon color placed ON a filled accent surface
+     --brand-accent-soft      soft accent tint used as active/selected background
+     --brand-logo-w / -h      logo slot box (see rules below)
+
+   Contrast contract any injected accent MUST satisfy (verifiable):
+     LIGHT mode:
+       - contrast(--brand-accent , #FAF7F1 page bg)      >= 4.5 : 1   (link text)
+       - contrast(--brand-accent , #FFFDF8 surface)      >= 4.5 : 1
+       - contrast(--brand-accent-contrast , --brand-accent) >= 4.5 : 1 (text on fill)
+     DARK mode:
+       - contrast(--brand-accent , #17150F page bg)      >= 4.5 : 1
+       - contrast(--brand-accent , #1E1B14 surface)      >= 4.5 : 1
+       - contrast(--brand-accent-contrast , --brand-accent) >= 4.5 : 1
+     --brand-accent-soft is decorative (background tint only); it must NOT be the
+     sole carrier of meaning and needs no text-contrast guarantee, but active text
+     placed on it uses --color-text, so keep it light in light mode / dark in dark.
+
+   Logo slot rules (the theme defines the box; the logo fits inside it):
+     - Header slot renders inside a fixed box: width var(--brand-logo-w) x
+       height var(--brand-logo-h). The image is scaled to CONTAIN (never cropped).
+     - Default box 28x28 suits square/icon marks. For a wide wordmark set a wider
+       width (e.g. --brand-logo-w:120px) keeping height ~24-28px. For a tall mark
+       keep width small. Minimum legible height in header: 20px. Entry page shows
+       the same logo at 56px tall via .entry__logo (height-driven, width auto).
+     - Provide logo.svg (required) and logo-dark.svg (optional; auto-swapped in
+       dark mode when present). Keep the mark monochrome-friendly; the theme does
+       NOT recolor it.
+============================================================================ */
+
+/* ---- NEUTRAL DEFAULT PRESET (ships with the theme; renders complete as-is) ---- */
+:root{
+  --brand-accent:#2B5B84;          /* low-chroma steel blue — reads as "system default" */
+  --brand-accent-contrast:#FFFFFF; /* white on the accent fill */
+  --brand-accent-soft:#E7EEF4;     /* soft tint for active/selected backgrounds */
+
+  --brand-logo-w:28px;
+  --brand-logo-h:28px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --brand-accent:#7FB0DC;          /* lightened steel blue for dark surfaces */
+    --brand-accent-contrast:#10131A; /* dark ink on the accent fill */
+    --brand-accent-soft:#1E2A34;     /* soft dark tint for active/selected backgrounds */
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   HOW TO MAKE A PRESET (what keel does per project)
+   1. Copy this file. Change ONLY the six custom properties above (light + dark).
+   2. Replace logo.svg (and optionally logo-dark.svg) in this folder.
+   3. If the mark is a wide wordmark, set --brand-logo-w accordingly.
+   4. Verify the contrast contract above with any checker (both modes).
+   Do not add selectors, do not import anything, do not touch _theme/.
+   ---------------------------------------------------------------------------- */

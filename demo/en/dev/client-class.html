@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-audience="dev" data-root="../../">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="keel-docs-theme" content="__THEME_VERSION__">
+<meta name="color-scheme" content="light dark">
+<title>Client class · Basalt</title>
+<link rel="stylesheet" href="../../_theme/css/theme.css">
+<link rel="stylesheet" href="../../_theme/css/print.css" media="print">
+<link rel="stylesheet" href="../../brand/brand.css">
+<script src="../../strings-en.js"></script>
+<script src="../../search-index.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main" data-i18n="skip_to_content">Saltar al contenido</a>
+<header class="site-header">
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar" data-i18n-aria="toggle_nav" aria-label="Abrir navegación"><svg class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+  <a class="brand" href="../../index.html"><span class="brand__logo"><img src="../../brand/logo.svg" alt="Basalt" width="28" height="28"></span><span class="brand__name">Basalt</span><span class="brand__version">v2.4.0</span></a>
+  <div class="header__tools">
+    <div class="search" role="search" data-open="false">
+      <div class="search__field"><svg class="search__icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M20 20l-4.7-4.7"></path></svg><input class="search__input" type="text" autocomplete="off" spellcheck="false" data-i18n-attr="placeholder:search_placeholder" data-i18n-aria="search_label" aria-label="Buscar" placeholder="Search the documentation"><span class="search__kbd">/</span></div>
+      <div class="search__results" role="listbox" data-i18n-aria="search_results_label" aria-label="Resultados"></div>
+    </div>
+    <nav class="switcher switcher--audience" data-i18n-aria="audience_label" aria-label="Audiencia">
+      <a class="switcher__item" href="../../en/user/index.html" data-i18n="audience_user">User guide</a>
+      <a class="switcher__item" href="../../en/dev/index.html" aria-current="page" data-i18n="audience_dev">Developer documentation</a>
+    </nav>
+    <nav class="switcher switcher--lang" data-i18n-aria="lang_label" aria-label="Idioma">
+      <a class="switcher__item" href="../../es/dev/clase-client.html" hreflang="es">ES</a>
+      <a class="switcher__item" href="#" aria-current="page" hreflang="en">EN</a>
+    </nav>
+  </div>
+</header>
+<div class="layout">
+  <aside class="sidebar" id="sidebar"><p class="sidebar__title">Developer documentation</p><ul class="nav-tree">
+      <li><a class="nav-tree__link" href="../../en/dev/index.html">Introduction</a></li>
+      <li><a class="nav-tree__link" href="../../en/dev/architecture.html">Architecture</a></li>
+      <li class="nav-group"><button class="nav-group__toggle" type="button" aria-expanded="false"><svg class="nav-group__chevron" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg><span>API</span></button><ul class="nav-group__list"><li><a class="nav-group__item" href="../../en/dev/api-inventory.html">Inventory</a></li><li><a class="nav-group__item" href="../../en/dev/api-webhooks.html">Webhooks</a></li></ul></li>
+      <li class="nav-group"><button class="nav-group__toggle" type="button" aria-expanded="true"><svg class="nav-group__chevron" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg><span>Reference</span></button><ul class="nav-group__list"><li><a class="nav-group__item" href="../../en/dev/client-class.html" aria-current="page">Client class</a></li></ul></li>
+      <li><a class="nav-tree__link" href="../../en/dev/changelog.html">Changelog</a></li>
+    </ul></aside>
+  <main class="content" id="main">
+    <div class="content__inner">
+      <nav class="breadcrumb" data-i18n-aria="breadcrumb_label" aria-label="Ruta"><a href="../../en/dev/index.html">Developer documentation</a><span class="breadcrumb__sep"></span><span>Client class</span></nav>
+      <h1>Client class</h1>
+      <p class="lead">The entry point of the PHP SDK to talk to the API.</p>
+      <details class="toc-inline"><summary><svg class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h9a3 3 0 0 1 3 3v13a2.5 2.5 0 0 0-2.5-2.5H5z"></path><path d="M17 7h2a1 1 0 0 1 1 1v12"></path></svg><span data-i18n="on_this_page">On this page</span></summary><div style="padding:0 var(--sp-4) var(--sp-3)"><ul class="toc__list" style="border:0"><li><a class="toc__link" href="#clase">Class Basalt\Client</a></li><li><a class="toc__link" href="#metodo">Method pull()</a></li></ul></div></details>
+      <h2 id="clase"><span class="sec-num" aria-hidden="true">01</span>Class Basalt\Client</h2><p>Instantiate a client with your token and options:</p><div class="code-block"><div class="code-block__tabs" role="tablist" aria-label="Code variants"><button class="code-block__tab" type="button" role="tab" id="cbc9id4k-t0" aria-controls="cbc9id4k-p0" aria-selected="true" tabindex="0">PHP</button></div><div class="code-block__bar"><span class="code-block__lang">bootstrap.php</span><button class="copy-btn" type="button"><svg class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V5a2 2 0 0 1 2-2h10"></path></svg><span class="copy-btn__label" data-i18n="copy">Copy</span></button></div><div class="code-block__panel" role="tabpanel" id="cbc9id4k-p0" aria-labelledby="cbc9id4k-t0"><pre><code>&lt;?php
+<span class="tok-keyword">use</span> <span class="tok-function">Basalt\Client</span>;
+
+<span class="tok-variable">$client</span> = <span class="tok-keyword">new</span> <span class="tok-function">Client</span>([
+  <span class="tok-string">'token'</span>   =&gt; <span class="tok-variable">$token</span>,
+  <span class="tok-string">'timeout'</span> =&gt; <span class="tok-number">15</span>,
+]);</code></pre></div></div><div class="table-wrap"><table class="data"><thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead><tbody><tr><td><code>stock(string $sku)</code></td><td><code>Stock</code></td><td>Stock for a SKU.</td></tr><tr><td><code>adjust(string $sku, int $delta)</code></td><td><code>Result</code></td><td>Applies an adjustment.</td></tr><tr><td><code>webhooks()</code></td><td><code>WebhookApi</code></td><td>Webhook access.</td></tr></tbody></table></div><h2 id="metodo"><span class="sec-num" aria-hidden="true">02</span>Method pull()</h2><p><span class="badge badge--deprecated">Deprecated</span> <span class="badge badge--since">since v2.3</span></p><p>Use <code>sync()</code>undefined<code>pull()</code> will be removed in v3.0.</p>
+      <nav class="pager" aria-label="Pages"><a class="pager__link pager__link--prev" href="../../en/dev/api-webhooks.html"><span class="pager__dir"><svg class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"></path></svg><span data-i18n="prev">Previous</span></span><span class="pager__title">Webhooks</span></a><a class="pager__link pager__link--next" href="../../en/dev/changelog.html"><span class="pager__dir"><span data-i18n="next">Next</span><svg class="" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l6 6-6 6"></path></svg></span><span class="pager__title">Changelog</span></a></nav>
+    </div>
+  </main>
+  <aside class="toc" aria-labelledby="toc-h"><p class="toc__title" id="toc-h" data-i18n="on_this_page">On this page</p><ul class="toc__list"><li><a class="toc__link" href="#clase">Class Basalt\Client</a></li><li><a class="toc__link" href="#metodo">Method pull()</a></li></ul></aside>
+</div>
+<footer class="site-footer"><span class="site-footer__meta">Basalt v2.4.0</span>
+    <nav><a href="https://basalt.dev/support">Support<svg class="external-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5"></path><path d="M19 5l-8 8"></path><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"></path></svg></a><a href="https://status.basalt.dev">Service status<svg class="external-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5"></path><path d="M19 5l-8 8"></path><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"></path></svg></a><a href="https://basalt.dev">basalt.dev<svg class="external-icon" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 5h5v5"></path><path d="M19 5l-8 8"></path><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"></path></svg></a></nav>
+    <span class="site-footer__spacer"></span><span class="site-footer__meta" data-i18n="footer_generated">Documentación generada con keel-docs-theme</span></footer>
+<script src="../../_theme/js/theme.js"></script>
+</body>
+</html>
