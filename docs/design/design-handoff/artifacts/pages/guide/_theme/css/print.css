@@ -1,0 +1,50 @@
+/* ============================================================================
+   keel-docs-theme · print.css  (media="print")  — content-page print sheet
+   No navigation, clean single column, link URLs made visible.
+   Version: __THEME_VERSION__
+============================================================================ */
+@media print{
+  :root{
+    --color-bg:#ffffff; --color-surface:#ffffff; --color-surface-2:#f4f4f4;
+    --color-text:#000000; --color-text-secondary:#222222; --color-text-muted:#444444;
+    --color-border:#bbbbbb; --color-border-strong:#888888;
+    --code-bg:#f4f4f4; --code-text:#000000; --code-border:#cccccc;
+  }
+  html,body{ background:#fff; }
+
+  /* strip chrome */
+  .site-header,.sidebar,.sidebar-scrim,.toc,.toc-inline,.search,.nav-toggle,
+  .switcher,.skip-link,.copy-btn,.heading-anchor,.pager{ display:none !important; }
+
+  .layout,.layout--no-toc{ display:block; }
+  .content{ padding:0; }
+  .content__inner,.content__inner--wide{ max-inline-size:none; }
+
+  /* legible base for paper */
+  body{ font-size:11pt; line-height:1.5; color:#000; }
+  .content h1{ font-size:22pt; border-block-end:1pt solid #000; }
+  .content h2{ font-size:16pt; page-break-after:avoid; }
+  .content h3{ font-size:13pt; page-break-after:avoid; }
+  .content h2,.content h3,.content h4{ break-after:avoid; }
+  p,li{ orphans:3; widows:3; }
+
+  /* keep blocks intact across pages */
+  .admonition,.code-block,.terminal,.api,.setting,.table-wrap,figure,.steps > li,.expected{
+    break-inside:avoid; }
+
+  /* code readable and wrapped so nothing is clipped on paper */
+  .code-block pre,.terminal pre,.api__sig{ white-space:pre-wrap; word-break:break-word; }
+  .code-block,.terminal,.api,.setting{ border:1pt solid #888; }
+
+  /* reveal link targets (skip in-page anchors and javascript) */
+  .content a[href^="http"]::after,
+  .content a[href^="../"]::after,
+  .content a[href$=".html"]::after{ content:" (" attr(href) ")"; font-family:var(--font-mono);
+    font-size:.82em; color:#444; word-break:break-all; }
+  .content a[href^="#"]::after{ content:""; }
+
+  a{ color:#000; text-decoration:underline; }
+  .badge,.http-verb{ border:1pt solid #666; color:#000 !important; background:#fff !important; }
+
+  @page{ margin:18mm 16mm; }
+}

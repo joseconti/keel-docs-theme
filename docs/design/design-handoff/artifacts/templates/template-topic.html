@@ -1,0 +1,134 @@
+<!doctype html>
+<!-- ============================================================================
+  keel-docs-theme · template-topic  (the workhorse: ~95% of pages)
+  Built ONCE. keel fills the {{ slots }} per page. Same structure for BOTH
+  audiences — only the nav data and which content components appear change.
+  Spec: SPEC/screens/template-topic.md
+  Relative-path variant for content pages (depth 2): ../../_theme/... , ../../brand/...
+  This skeleton is shown live against the real theme; tokens render literally.
+============================================================================ -->
+<html lang="{{ locale }}" dir="{{ dir }}" data-audience="{{ audience }}" data-root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="keel-docs-theme" content="__THEME_VERSION__">
+  <meta name="color-scheme" content="light dark">
+  <title>{{ page.title }} · {{ product.name }}</title>
+  <link rel="stylesheet" href="../../_theme/css/theme.css">
+  <link rel="stylesheet" href="../../_theme/css/print.css" media="print">
+  <link rel="stylesheet" href="../../brand/brand.css">
+  <script src="../../strings-{{ locale }}.js"></script>
+  <script src="../../search-index.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main" data-i18n="skip_to_content">Saltar al contenido</a>
+
+  <header class="site-header">
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar" data-i18n-aria="toggle_nav">
+      <!-- icon: menu --></button>
+    <a class="brand" href="../../index.html">
+      <span class="brand__logo"><img src="../../brand/logo.svg" alt="{{ product.name }}" width="28" height="28"></span>
+      <span class="brand__name">{{ product.name }}</span>
+      <span class="brand__version">{{ product.version }}</span>
+    </a>
+    <div class="header__tools">
+      <div class="search" role="search" data-open="false">
+        <div class="search__field">
+          <!-- icon: search -->
+          <input class="search__input" type="text" autocomplete="off" spellcheck="false"
+                 data-i18n-attr="placeholder:search_placeholder" data-i18n-aria="search_label">
+          <span class="search__kbd">/</span>
+        </div>
+        <div class="search__results" role="listbox" data-i18n-aria="search_results_label"></div>
+      </div>
+      <nav class="switcher switcher--audience" data-i18n-aria="audience_label">
+        <a class="switcher__item" href="../../{{ locale }}/user/index.html" data-i18n="audience_user"></a>
+        <a class="switcher__item" href="../../{{ locale }}/dev/index.html" data-i18n="audience_dev"></a>
+        <!-- aria-current="page" on the ACTIVE audience -->
+      </nav>
+      <nav class="switcher switcher--lang" data-i18n-aria="lang_label">
+        <!-- one item per available locale; the current one is aria-current="page";
+             others link to the SAME page in that locale, or the audience home if it
+             does not exist in that locale. -->
+        <a class="switcher__item" href="#" aria-current="page" hreflang="{{ locale }}">{{ locale|upper }}</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- SIDEBAR · nav tree for {{ audience }}; groups collapsible; active = aria-current="page" -->
+    <aside class="sidebar" id="sidebar">
+      <p class="sidebar__title">{{ audience.title }}</p>
+      <ul class="nav-tree">
+        <!-- repeat: top link -->
+        <li><a class="nav-tree__link" href="{{ item.href }}">{{ item.label }}</a></li>
+        <!-- repeat: collapsible group -->
+        <li class="nav-group">
+          <button class="nav-group__toggle" type="button" aria-expanded="true">
+            <!-- icon: chevron (class nav-group__chevron) --><span>{{ group.label }}</span>
+          </button>
+          <ul class="nav-group__list">
+            <li><a class="nav-group__item" href="{{ child.href }}">{{ child.label }}</a></li>
+          </ul>
+        </li>
+      </ul>
+    </aside>
+
+    <main class="content" id="main">
+      <div class="content__inner">
+        <nav class="breadcrumb" data-i18n-aria="breadcrumb_label">
+          <a href="{{ crumb.href }}">{{ crumb.label }}</a>
+          <span class="breadcrumb__sep"></span>
+          <span>{{ page.title }}</span>
+        </nav>
+        <h1>{{ page.title }}</h1>
+        <p class="lead">{{ page.lead }}</p>
+
+        <!-- inline "on this page" (shown only < 1024px; mirrors the aside TOC) -->
+        <details class="toc-inline">
+          <summary><!-- icon: book --><span data-i18n="on_this_page"></span></summary>
+          <div style="padding:0 var(--sp-4) var(--sp-3)"><ul class="toc__list" style="border:0">{{ toc.items }}</ul></div>
+        </details>
+
+        <!-- ============ CONTENT BODY ============
+             keel emits the content components here. Every component in the
+             inventory (admonition, steps, expected, code-block, terminal, api,
+             hook, class, table, setting, figure, kbd, badges, disclosure) is a
+             building block documented in SPEC/screens/ + artifacts/components/.
+             Section headings use <h2 id><span class="sec-num">NN</span>Title</h2>. -->
+        {{ page.body }}
+
+        <nav class="pager" aria-label="{{ str.pages }}">
+          <a class="pager__link pager__link--prev" href="{{ prev.href }}">
+            <span class="pager__dir"><!-- icon: arrow-prev --><span data-i18n="prev"></span></span>
+            <span class="pager__title">{{ prev.title }}</span>
+          </a>
+          <a class="pager__link pager__link--next" href="{{ next.href }}">
+            <span class="pager__dir"><span data-i18n="next"></span><!-- icon: arrow-next --></span>
+            <span class="pager__title">{{ next.title }}</span>
+          </a>
+        </nav>
+      </div>
+    </main>
+
+    <!-- TOC "En esta página" · scrollspy highlights the active section (hidden < 1024px) -->
+    <aside class="toc" aria-labelledby="toc-h">
+      <p class="toc__title" id="toc-h" data-i18n="on_this_page"></p>
+      <ul class="toc__list">
+        <li><a class="toc__link" href="#{{ heading.id }}">{{ heading.label }}</a></li>
+      </ul>
+    </aside>
+  </div>
+
+  <footer class="site-footer">
+    <span class="site-footer__meta">{{ product.name }} {{ product.version }}</span>
+    <nav>
+      <a href="{{ support.url }}">{{ support.label }}<!-- icon: external --></a>
+    </nav>
+    <span class="site-footer__spacer"></span>
+    <span class="site-footer__meta" data-i18n="footer_generated"></span>
+  </footer>
+
+  <script src="../../_theme/js/theme.js"></script>
+</body>
+</html>
