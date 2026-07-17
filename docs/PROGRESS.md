@@ -29,12 +29,12 @@
 | 4 Faithful build | done (2026-07-17; A1-A3 logged; AT pass ⚠ pending user) | docs/BUILD-SPEC.md |
 | 5 Development | done (merged into Phase 4: verbatim port + mechanical verification) | docs/BUILD-SPEC.md §10 |
 | 6 Documentation | done (2026-07-17) | README.md, docs/architecture.md, docs/api/INDEX.md |
-| 7 Release | in progress (package built + verified; commits next; push + publish = user) | docs/07-release.md, CHANGELOG.md, dist/ |
+| 7 Release | done (v1.0.0 published 2026-07-17, zip + checksums attached, latest) | docs/07-release.md, CHANGELOG.md |
 | 8 Website | n/a (no website intent) | — |
 
 ## Current position
-- Phase: 7 — Release.  Step: commits + tag done locally; awaiting user push + GitHub release publication
-- Next action: user pushes main + v1.0.0 and publishes the release with dist/ assets (docs/07-release.md §Ship); then user opens demo/index.html for the AT pass
+- Phase: 7 done — project in MAINTENANCE (references/maintenance.md)
+- Next action: apply the keel-skill integration changes (docs/PLAN-KEEL-DOCS-THEME.md §4) in the keel-skill repo, then first consumer regeneration; close the open AT pass on the demo
 
 ## Open items
 - Unresolved user questions: none
@@ -46,4 +46,4 @@
 - José Conti brand preset — deferred by user decision to first keel consumption (SPEC/open-questions.md #1) — revisit at first consumer project
 - keel-skill changes to APPLY this theme (guide-theme.md, phase-6, guide-qa, maintenance) — after v1.0.0 release, per docs/PLAN-KEEL-DOCS-THEME.md §4 — NEVER bump keel-skill version without explicit instruction
 
-Last updated: 2026-07-17 — Phase 7, release prepared
+Last updated: 2026-07-17 — Phase 7 closed; v1.0.0 published; maintenance

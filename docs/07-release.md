@@ -19,4 +19,5 @@
 
 ## v1.0.0 — 2026-07-17
 - Package built and verified this session: zip 55 entries (45 files), checksums 46 lines (45 files + zip), stamp verified in templates/pages/js, skip-link present in packaged template-entry.
-- Pending at close: user AT pass on demo (⚠ flagged), push + release publication (user).
+- Published 2026-07-17 10:33 (GitHub release, latest; zip + checksums.txt attached) — verified against the live releases page.
+- Open at close: user AT pass on demo (⚠) — close via guided pass or recorded acceptance.
