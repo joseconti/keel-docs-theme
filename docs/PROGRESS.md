@@ -15,10 +15,12 @@
 - Design system: founding — canonical (direction "Errata"); lives in this repo
 - Keel portability: lock only
 - Assistant config: none
-- Keel baseline: v3.1.0
+- Models: n/a (no agents configured — Assistant config: none)
+- Keel baseline: v3.4.0
 - Website intent: no
 - Client budget: no
 - User guide: n/a — the product IS the guide system; README + demo/ serve as its docs
+- Docs theme: n/a — this repo IS keel-docs-theme; it is not a consumer (no guide/ vendored)
 
 ## Phase status
 | Phase | Status | Key artifacts |
@@ -40,11 +42,10 @@
 - Unresolved user questions: none
 - Open Design Requests: none
 - Unverified external steps/assets: assistive-technology pass on the demo (user-run, ⚠ open at release per user decision pending)
-- Keel baseline gap: card says v3.1.0, running Keel is v3.4.0 — post-update reconciliation OFFERED 2026-07-22, awaiting user decision
 - Forge issues in progress: none
 
 ### Deferred items (consciously postponed work)
 - José Conti brand preset — deferred by user decision to first keel consumption (SPEC/open-questions.md #1) — revisit at first consumer project
 - keel-skill changes to APPLY this theme (guide-theme.md, phase-6, guide-qa, maintenance) — after v1.0.0 release, per docs/PLAN-KEEL-DOCS-THEME.md §4 — NEVER bump keel-skill version without explicit instruction
 
-Last updated: 2026-07-22 — maintenance: v1.0.0 release assets backfilled; v1.0.1 published (packaging fix, D-010 / L-002)
+Last updated: 2026-07-22 — maintenance: v1.0.1 packaging fix (D-010/L-002); reconciled to Keel v3.4.0 (D-011/D-012)

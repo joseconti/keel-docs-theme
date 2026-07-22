@@ -75,3 +75,21 @@
 - Why: consumers fetch the latest release zip; a release with no assets forced a downstream chat to a fallback. Backfilling repairs v1.0.0 for anyone pinned to it; the v1.0.1 patch gives a clean, correct "latest" and documents the defect.
 - Alternatives rejected: only backfill v1.0.0 without a new version (user explicitly asked for v1.0.1); rebuild v1.0.0's zip (the local artifact was proven intact, so the authentic build was reattached).
 - Supersedes: none. Related: L-002.
+
+## D-011 — Keel v3.1.0 → v3.4.0 post-update reconciliation
+- Date / phase: 2026-07-22 / maintenance (user: "Sí, reconcilia todo")
+- Decision: reconcile the project from `Keel baseline: v3.1.0` to the running v3.4.0. Applied:
+  - **Lock refreshed** — `CLAUDE.md` + `AGENTS.md` `KEEL:BEGIN` stamp v3.1.0 → v3.4.0. The block body was already byte-identical to the canonical v3.4.0 copy, so this was a stamp-only change (no body drift).
+  - **Card lines added:** `Docs theme: n/a` — this repo IS keel-docs-theme, not a consumer, no `guide/` vendored [v3.2.0]; `Models: n/a` — no agents (Assistant config: none) [v3.3.0].
+  - **Build-assets source-first contract [v3.4.0]:** recorded N/A — see D-012.
+  - `Keel baseline:` advanced to v3.4.0.
+- Behavioral-only, nothing to apply: v3.2.1 forge release-asset verification was in fact applied in this same session (the v1.0.0/v1.0.1 fix, L-002) — and this very project was the field case that produced that Keel change (Keel CHANGELOG v3.2.1); v3.2.0 guide-theme consumption + `guide-qa` (this repo PRODUCES the theme, never consumes it); v3.3.0 model binding (no agents).
+- Table 1 parity (project at Phase 7 / maintenance): present and correct — PROGRESS, decisions, lessons, CLAUDE/AGENTS lock, estimate, token-ledger, architecture, api/INDEX.md, BUILD-SPEC, design/ (brief + handoff), 07-release, README, .gitignore/.gitattributes(n/a — see below). Absent rows and their disposition (accepted at project setup, NOT a v3.2–v3.4 gap; recorded here so future sessions do not re-flag): `00/01/02/03` and `flows/` — Phases 1–2 ran OUTSIDE keel and were consolidated into docs/PLAN-KEEL-DOCS-THEME.md + docs/design/DESIGN-BRIEF.md; `05-test-points.md` — Phase 5 merged into Phase 4, evidence in BUILD-SPEC §10; `flows/` — n/a (a static theme has no branching user journeys; demo/ is the reference); `docs/security.md` + `docs/accessibility.md` — content lives in the frozen design-handoff SPEC (SPEC/accessibility.md measured ratios; library-component profile); can be consolidated on request; `playground.md` + `scripts/keel-verify` — the runnable validation is demo/ (file://-openable living styleguide).
+- Why: a released project must catch up with what newer Keel introduced, on the record, without re-running completed phases or fabricating historical process artifacts.
+- Supersedes: none. Related: D-012, L-002.
+
+## D-012 — Build-assets source-first (minified) contract: N/A for this theme
+- Date / phase: 2026-07-22 / maintenance (Keel v3.4.0 reconciliation)
+- Decision: the Keel v3.4.0 "source first, minified for production" contract does not apply here — recorded as the explicit `docs/decisions.md` override that contract requires. The theme deliberately ships readable, unminified HTML/CSS/JS with NO build step (D-001, D-007): file://-safe, zero dependencies, zero external requests, vendored as-is and checksum-verified by consumers. There are no `*.min.*` files and none should exist.
+- Why: the product's value is a no-build, inspectable, offline theme; a minified distribution would break the "readable reference" and the checksum-as-shipped integrity model.
+- Supersedes: none. Related: D-001, D-007.
