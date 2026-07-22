@@ -93,3 +93,13 @@
 - Decision: the Keel v3.4.0 "source first, minified for production" contract does not apply here — recorded as the explicit `docs/decisions.md` override that contract requires. The theme deliberately ships readable, unminified HTML/CSS/JS with NO build step (D-001, D-007): file://-safe, zero dependencies, zero external requests, vendored as-is and checksum-verified by consumers. There are no `*.min.*` files and none should exist.
 - Why: the product's value is a no-build, inspectable, offline theme; a minified distribution would break the "readable reference" and the checksum-as-shipped integrity model.
 - Supersedes: none. Related: D-001, D-007.
+
+## D-013 — Consolidated docs/security.md and docs/accessibility.md; guided AT pass started
+- Date / phase: 2026-07-22 / maintenance (user: "Sí, ambas cosas")
+- Decision: create the two Phase 6 "Always" consolidated docs that D-011 recorded as absent-but-available, and run the long-deferred assistive-technology pass:
+  - `docs/security.md` — applied library-component posture. JS surface audited by inspection (theme.js: no network/eval/dynamic-exec; the search renderer escapes all injected content via escapeHtml/highlight — XSS-safe even against a hostile index; documented href-scheme trust assumption). Offline/no-telemetry treated as a security property; supply chain (zero runtime deps, OFL fonts bundled), reproducible checksummed artifact, disclosure/versioning.
+  - `docs/accessibility.md` — applied WCAG 2.2 AA/AAA result consolidated from the frozen SPEC (§§5–11), plus an INDEPENDENT contrast recomputation (`scripts/verify-contrast.py`: 40 pairs both modes, max |recomputed − SPEC| = 0.005, 0 disagreements, 0 below AA) and the guided AT-pass checklist (K1–K7 keyboard, V1–V6 VoiceOver, P1–P4 preferences).
+  - `scripts/verify-contrast.py` added so the contrast check is reproducible by any maintainer.
+- The guided AT pass (the release's long-open ⚠ item) is being run with the user on demo/; each item recorded pass/fail in accessibility.md before the next. axe/pa11y/Lighthouse are not installed in the maintainer's environment — recorded as a gap, not hidden.
+- Why: closes the two genuinely-valuable parity items from D-011 and finally executes the AT pass deferred at release.
+- Supersedes: none. Related: D-011, D-006 (SPEC is the authority), L-002.
