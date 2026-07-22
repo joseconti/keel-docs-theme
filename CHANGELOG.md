@@ -13,3 +13,9 @@ Initial release. Art direction **Errata** — an editorial engineering manual br
 - Typography: Source Serif 4 (prose), IBM Plex Sans (UI), IBM Plex Mono (code) — 10 self-hosted woff2, SIL OFL, licenses included.
 - Complete bilingual demo (fictional product "Basalt", 25 pages) as the permanent living styleguide in `demo/`.
 - Release packaging with stamped `__THEME_VERSION__` and SHA-256 `checksums.txt` for mechanical integrity verification.
+
+## v1.0.1 — 2026-07-22
+
+Release-packaging fix. No changes to the theme itself: `_theme/`, the three templates, the brand layer, and the demo are byte-identical to v1.0.0 — only the stamped `__THEME_VERSION__` differs.
+
+- Fixed: the v1.0.0 GitHub release was published without its downloadable assets — `keel-docs-theme-v1.0.0.zip` and `checksums.txt` were described in the release body but never attached, so consumers could not fetch the theme from the release. v1.0.0's assets have been backfilled, and v1.0.1 ships them correctly attached and verified after publication.

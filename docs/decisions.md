@@ -66,3 +66,12 @@
 - Decision: first release is v1.0.0 (tag v1.0.0, zip keel-docs-theme-v1.0.0.zip).
 - Why: explicitly named by the user as the goal in docs/PLAN-KEEL-DOCS-THEME.md and re-confirmed when launching this build.
 - Supersedes: none.
+
+## D-010 — v1.0.1 patch release: fix v1.0.0 missing release assets
+- Date / phase: 2026-07-22 / maintenance (explicit user instruction: "arréglalo y crea una 1.0.1")
+- Decision: remediate the v1.0.0 asset-attachment defect in two parts:
+  1. Backfill v1.0.0's downloadable assets. The GitHub release had `assets: []` — `keel-docs-theme-v1.0.0.zip` and `checksums.txt` were described in the release body but never uploaded. The intact local `dist/` build (zip SHA verified against `checksums.txt` first) was attached with `gh release upload v1.0.0` and verified via `gh release view v1.0.0 --json assets`.
+  2. Cut v1.0.1 as the new "latest". Theme content is byte-identical to v1.0.0 (`git diff v1.0.0 HEAD -- theme/` empty); only the stamped `__THEME_VERSION__` differs. Assets attached at creation and verified post-publication.
+- Why: consumers fetch the latest release zip; a release with no assets forced a downstream chat to a fallback. Backfilling repairs v1.0.0 for anyone pinned to it; the v1.0.1 patch gives a clean, correct "latest" and documents the defect.
+- Alternatives rejected: only backfill v1.0.0 without a new version (user explicitly asked for v1.0.1); rebuild v1.0.0's zip (the local artifact was proven intact, so the authentic build was reattached).
+- Supersedes: none. Related: L-002.

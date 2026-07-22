@@ -29,7 +29,7 @@
 | 4 Faithful build | done (2026-07-17; A1-A3 logged; AT pass ⚠ pending user) | docs/BUILD-SPEC.md |
 | 5 Development | done (merged into Phase 4: verbatim port + mechanical verification) | docs/BUILD-SPEC.md §10 |
 | 6 Documentation | done (2026-07-17) | README.md, docs/architecture.md, docs/api/INDEX.md |
-| 7 Release | done (v1.0.0 published 2026-07-17, zip + checksums attached, latest) | docs/07-release.md, CHANGELOG.md |
+| 7 Release | done (v1.0.0 2026-07-17; assets were MISSING on GitHub, backfilled 2026-07-22; v1.0.1 2026-07-22 ships assets, latest) | docs/07-release.md, CHANGELOG.md |
 | 8 Website | n/a (no website intent) | — |
 
 ## Current position
@@ -40,10 +40,11 @@
 - Unresolved user questions: none
 - Open Design Requests: none
 - Unverified external steps/assets: assistive-technology pass on the demo (user-run, ⚠ open at release per user decision pending)
+- Keel baseline gap: card says v3.1.0, running Keel is v3.4.0 — post-update reconciliation OFFERED 2026-07-22, awaiting user decision
 - Forge issues in progress: none
 
 ### Deferred items (consciously postponed work)
 - José Conti brand preset — deferred by user decision to first keel consumption (SPEC/open-questions.md #1) — revisit at first consumer project
 - keel-skill changes to APPLY this theme (guide-theme.md, phase-6, guide-qa, maintenance) — after v1.0.0 release, per docs/PLAN-KEEL-DOCS-THEME.md §4 — NEVER bump keel-skill version without explicit instruction
 
-Last updated: 2026-07-17 — Phase 7 closed; v1.0.0 published; maintenance
+Last updated: 2026-07-22 — maintenance: v1.0.0 release assets backfilled; v1.0.1 published (packaging fix, D-010 / L-002)

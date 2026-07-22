@@ -19,5 +19,13 @@
 
 ## v1.0.0 — 2026-07-17
 - Package built and verified this session: zip 55 entries (45 files), checksums 46 lines (45 files + zip), stamp verified in templates/pages/js, skip-link present in packaged template-entry.
-- Published 2026-07-17 10:33 (GitHub release, latest; zip + checksums.txt attached) — verified against the live releases page.
+- Published 2026-07-17 10:33 (GitHub release, latest). ASSET DEFECT (found 2026-07-22 from a consumer report): the release was published with `assets: []` — the zip and `checksums.txt` were described in the release body but never attached. The 2026-07-17 note "verified against the live releases page" was a FALSE verification: the rendered page shows the body's asset description, not the actual attachments (see L-002).
+- Backfilled 2026-07-22: local `dist/` zip SHA verified vs `checksums.txt` first, then `gh release upload v1.0.0 dist/keel-docs-theme-v1.0.0.zip dist/checksums.txt`. Verified via `gh release view v1.0.0 --json assets` → `keel-docs-theme-v1.0.0.zip` (755176 bytes), `checksums.txt` (4356 bytes).
 - Open at close: user AT pass on demo (⚠) — close via guided pass or recorded acceptance.
+
+## v1.0.1 — 2026-07-22 (maintenance: packaging fix, D-010 / L-002)
+- Reason: correct the v1.0.0 asset-attachment defect. Theme content byte-identical to v1.0.0 — `git diff v1.0.0 HEAD -- theme/` empty; only the stamped `__THEME_VERSION__` differs.
+- Package: `bash scripts/package.sh v1.0.1` → `dist/keel-docs-theme-v1.0.1.zip` (755421 bytes) + `checksums.txt` (4356 bytes); 46 checksum entries. Placeholder fully stamped (meta `content="v1.0.1"`); no `__THEME_VERSION__` remains; zip SHA ≡ checksums.txt; `theme/_theme` ≡ `demo/_theme`.
+- Confidential-data scan on the staged tree: no findings (CHANGELOG + docs only).
+- No automated suite / `keel-verify` in this project (static theme; `demo/` is the living validation) — as-built since v1.0.0.
+- Published 2026-07-22 with both assets at creation; verified attached via `gh release view v1.0.1 --json assets` (recorded at ship time).
