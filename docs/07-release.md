@@ -28,4 +28,4 @@
 - Package: `bash scripts/package.sh v1.0.1` → `dist/keel-docs-theme-v1.0.1.zip` (755421 bytes) + `checksums.txt` (4356 bytes); 46 checksum entries. Placeholder fully stamped (meta `content="v1.0.1"`); no `__THEME_VERSION__` remains; zip SHA ≡ checksums.txt; `theme/_theme` ≡ `demo/_theme`.
 - Confidential-data scan on the staged tree: no findings (CHANGELOG + docs only).
 - No automated suite / `keel-verify` in this project (static theme; `demo/` is the living validation) — as-built since v1.0.0.
-- Published 2026-07-22 with both assets at creation; verified attached via `gh release view v1.0.1 --json assets` (recorded at ship time).
+- Published 2026-07-22 (`gh release create v1.0.1 --latest` with both assets). Verified post-publication: `gh release view v1.0.1 --json assets` → `keel-docs-theme-v1.0.1.zip` (755421 bytes), `checksums.txt` (4356 bytes); `repos/joseconti/keel-docs-theme/releases/latest` resolves to tag v1.0.1; `gh release list` marks v1.0.1 as Latest. v1.0.0 re-confirmed carrying its backfilled assets.
