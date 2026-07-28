@@ -13,3 +13,10 @@
 - What failed: "verifying" attachment by reading the rendered release page — which renders the body's asset description — instead of querying the actual attachment list.
 - Working solution: verify assets after publication with `gh release view <tag> --json assets` (names + sizes), never from the rendered page. Backfill missing assets with `gh release upload <tag> <files>` and re-verify.
 - Rule for next time: a forge release that ships downloadable assets is not "done" until its attachment list is confirmed by API/CLI. (Current Keel already codifies this — phase-7-release.md step 5 / definition of done; the v1.0.0 release predates this project's baseline reconciliation, card `Keel baseline: v3.1.0`.)
+
+## L-003 — `overflow:hidden` on a rounded container clips its descendants' focus ring
+- Problem: the audience/language switcher (`.switcher`, `overflow:hidden` to clip items to its rounded corners) clipped the 2px `outline-offset` focus ring of its items, so keyboard focus on "User guide"/"Developer"/"ES"/"EN" was INVISIBLE — a WCAG 2.4.7 (Focus Visible) failure shipped in v1.0.0/v1.0.1.
+- Where: `theme/_theme/css/theme.css`; found in the guided assistive-technology pass (item K2), 2026-07-22.
+- What failed: the global `:focus-visible{ outline-offset:2px }` draws the ring OUTSIDE the element; any ancestor with `overflow:hidden` (needed here for `border-radius`) clips that outward ring away.
+- Working solution: draw the ring INSIDE for focusable children of a clipped rounded container — `.switcher__item:focus-visible{ outline-offset:-2px }`. The `outline` shorthand in the `forced-colors` rule does not reset `outline-offset`, so high-contrast focus stays visible too.
+- Rule for next time: whenever a container uses `overflow:hidden`/`clip` with rounded corners, check that its focusable descendants' focus ring is not clipped — use a negative `outline-offset` (or an inset `box-shadow`) there. Add this to every focus-style review.

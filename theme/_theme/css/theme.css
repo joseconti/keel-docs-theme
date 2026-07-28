@@ -258,6 +258,11 @@ button{ font:inherit; color:inherit; }
 .switcher__item[aria-current="page"],.switcher__item[aria-current="true"]{
   background:var(--brand-accent-soft); color:var(--color-text); font-weight:600; }
 .switcher--lang .switcher__item{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.02em; }
+/* .switcher has overflow:hidden (to clip the items to its rounded corners), which also
+   clips a 2px-offset focus ring; draw the item's focus ring INSIDE the item so it stays
+   visible — WCAG 2.4.7 Focus Visible. Keeps working under forced-colors (outline color
+   comes from the forced-colors rule; the shorthand there does not reset outline-offset). */
+.switcher__item:focus-visible{ outline-offset:-2px; }
 
 /* ============================================================================
    LAYOUT SHELL

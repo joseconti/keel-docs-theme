@@ -78,13 +78,13 @@ next. Started 2026-07-22.
 
 | # | Item | Expected | Status |
 |---|------|----------|--------|
-| K1 | Skip link | Tab once from top → visible "Skip to content"; Enter jumps to `#main` | ⚠ pending |
-| K2 | Focus order & visible focus | Tab through header→sidebar→content→pagination→footer; 2px outline on each; order matches visual | ⚠ pending |
-| K3 | No keyboard trap | Tab forward and Shift+Tab back through the whole page; focus never stuck | ⚠ pending |
-| K4 | Search combobox | Focus search, type a term; results appear; ↑/↓ move highlight; Enter opens; Esc closes, focus back to input | ⚠ pending |
-| K5 | Code tabs | Tab to a code example's tab; ←/→ switch language; only active tab in tab order | ⚠ pending |
-| K6 | Sidebar drawer (narrow) | At mobile width, nav toggle opens drawer; focus enters first link; Esc closes, focus back to toggle | ⚠ pending |
-| K7 | Copy button | Tab to "Copy", Enter; visible "Copied" feedback | ⚠ pending |
+| K1 | Skip link | Tab once from top → visible "Skip to content"; Enter jumps to `#main` | ✓ pass (2026-07-22) — link appears on first Tab, focus ring visible, Enter jumps to content |
+| K2 | Focus order & visible focus | Tab through header→sidebar→content→pagination→footer; 2px outline on each; order matches visual | ✓ pass (2026-07-22) — focus order correct, outline visible everywhere. Found + FIXED a WCAG 2.4.7 fail: `.switcher` `overflow:hidden` clipped the switcher items' 2px-offset focus ring; `.switcher__item:focus-visible{ outline-offset:-2px }` draws it inside. Re-verified visible on User guide/Developer + ES/EN. See L-003. |
+| K3 | No keyboard trap | Tab forward and Shift+Tab back through the whole page; focus never stuck | ✓ pass (2026-07-22) — focus traverses forward and back with no trap; search and code tabs are enterable and exitable |
+| K4 | Search combobox | Focus search, type a term; results appear; ↑/↓ move highlight; Enter opens; Esc closes, focus back to input | ✓ pass (2026-07-23) — results with count appear, ↑/↓ move the highlight, Enter opens, Esc closes and returns focus to input |
+| K5 | Code tabs | Tab to a code example's tab; ←/→ switch language; only active tab in tab order | ✓ pass (2026-07-23) — ←/→ switch tab and code; Tab enters only the active tab (roving tabindex), does not step through every tab |
+| K6 | Sidebar drawer (narrow) | At mobile width, nav toggle opens drawer; focus enters first link; Esc closes, focus back to toggle | ✓ pass (2026-07-23) — mouse open/close OK; Enter AND Space both open and move focus into the drawer; Esc closes and returns focus to the toggle. An initial "Enter/Esc don't work" report did NOT reproduce under a controlled re-test — a focus-placement artifact, not a defect (toggle is a native `<button>`; document-level Escape handler at theme.js:85). |
+| K7 | Copy button | Tab to "Copy", Enter; visible "Copied" feedback | ✓ pass (2026-07-23) — keyboard-activates and shows the "Copied" state |
 | V1 | VoiceOver landmarks | Rotor → Landmarks lists banner, search, navigation(s), main, complementary, contentinfo — all labelled | ⚠ pending |
 | V2 | VoiceOver headings | Rotor → Headings: single h1, h2 sections, no skipped levels; section numbers not read as content | ⚠ pending |
 | V3 | VoiceOver search announce | Typing announces result count (aria-live); arrowing announces each option | ⚠ pending |
