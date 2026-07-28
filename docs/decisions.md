@@ -103,3 +103,13 @@
 - The guided AT pass (the release's long-open ⚠ item) is being run with the user on demo/; each item recorded pass/fail in accessibility.md before the next. axe/pa11y/Lighthouse are not installed in the maintainer's environment — recorded as a gap, not hidden.
 - Why: closes the two genuinely-valuable parity items from D-011 and finally executes the AT pass deferred at release.
 - Supersedes: none. Related: D-011, D-006 (SPEC is the authority), L-002.
+
+## D-014 — Keel v3.4.0 → v5.0.0 post-update reconciliation
+- Date / phase: 2026-07-23 / maintenance (user: "actualiza keel" → "adelante con todo")
+- Decision: reconcile v3.4.0 → v5.0.0 (crossing v3.5.0, v4.0.0, v5.0.0). The installed skill was already at v5.0.0 (updated mid-session); the project catches up. Full sweep recorded in docs/keel-conformance.md.
+  - **Applied:** lock block refreshed to v5.0.0 (body changed — step 3 gained the "never claim unverified / `[E]` target-tree / read the change map" text, not just the stamp); docs/keel-conformance.md (v5.0.0 conformance sweep); docs/threat-model.md (v4.0.0); docs/playground.md (v5.0.0 — documents demo/ as the playground); docs/rubrics/visual-fidelity.md (v3.5.0 §6a rubric); anti-patterns self-audit run (v4.0.0 — clean for a static theme, two structural notes folded into the deferred harness); keel-conformance.md linked from PROGRESS (orphan fixed, anti-pattern 12).
+  - **Declined (on record):** the v4.0.0 competitive confrontation (canonical infra theme, scope settled); .gitattributes export-ignore is n/a (release packaged by scripts/package.sh, not git archive); the consolidated early-phase docs stay consolidated (per D-011).
+  - **Deferred:** the v5.0.0 test-automation harness — keel-doctor, browser drivers, driven tests, scripts/keel-verify + its v4.0.0 checks, and the 01/02/03/05-test-points back-fill (with `[E]`/change-map/AC-nn IDs) — disproportionate for a no-build static theme validated by demo/ + verify-contrast.py + the guided AT pass. Revisit if the theme gains runtime behavior.
+  - **Adopted behaviorally (no artifact):** docs-follow-code for changed/removed surfaces (v3.5.0); AI-development-time language (v4.0.0); accessibility rebalance — keyboard/focus pass is assistant-driven and real AT batched (v5.0.0), though this session's keyboard pass ran manually and found L-003.
+- Baseline advanced to v5.0.0.
+- Supersedes: none. Related: D-011 (v3.1→v3.4 reconciliation + consolidated-docs rationale), D-012, D-013.
