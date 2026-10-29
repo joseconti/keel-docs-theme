@@ -46,3 +46,8 @@ Owner-approved main integration557b0e0 and annotated tag v1.0.2. GitHub release 
 ## v1.0.3 candidate — 2026-10-29
 
 Owner approved publication and consumption (D-022). Source and exact stamped package pass84reflow plus8entry axe/keyboard assertions, no browser errors. All46manifest hashes and source-to-stamped-package byte parity pass. Whole-tree gitleaks finds zero leaks. Package SHA256 and sizes are recorded in docs/verification/v1.0.3-package.json. Published v1.0.2 remains immutable; entry consumers must replace aria-selected with aria-pressed alongside the complete theme update. Guided VoiceOver remains unverified.
+
+
+## v1.0.3 published — 2026-10-29
+
+Annotated tag v1.0.3 and origin/main point to f29118194d7f809748516005e9a7d225f1971d0c. Release: https://github.com/joseconti/keel-docs-theme/releases/tag/v1.0.3 . Actual attachments: ZIP756704bytes and checksum manifest4356bytes. Fresh download at /tmp/keel-v103-published verifies46/46hashes; ZIP SHA256 f3c9265e78df1765a0f73b47a31df62a774fc720b2f1e7b0ee933299f40ad66c. Downloaded exact assets pass8entry plus84reflow assertions with no errors. Independent source/security/docs review reports no blocking findings. Browser closed and lane returned to parent. Local main checkout is untouched; release was merged in the isolated release branch and pushed to origin/main. DeCA consumption is parent-owned.

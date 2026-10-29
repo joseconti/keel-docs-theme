@@ -148,3 +148,6 @@ Parent owner explicitly approves publication and DeCA consumption. Main557b0e0 t
 ## D-022 — Owner-approved v1.0.3 publication and consumption
 
 2026-10-29. Owner explicitly answers yes to publishing and consuming theme v1.0.3. This authorises integration of T-006/T-007 through develop into main, version1.0.3 packaging, annotated tag and GitHub release with both verified downloadable assets. T-008 owns publication and fresh download verification; the DeCA coordinator owns consumer updates. Published v1.0.2 remains immutable. No production deployment or new assistive-technology result is implied. The existing scoped automatic autonomy applies to this approved release.
+
+
+D-022 publication result: v1.0.3 published at f291181 with two actual downloadable assets,46/46freshdownload hashes and92browser assertions green. Source placeholders unchanged. v1.0.2 tag/asset identities rechecked unchanged. Independent reader found no blocking runtime/security/docs/package issue; no new reporter contact or issue closure.

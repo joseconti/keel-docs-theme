@@ -157,11 +157,11 @@ slices:
 
   - id: T-008
     title: "Publish owner-approved v1.0.3 and verify downloaded assets"
-    status: in-progress
+    status: done
     original_hours: 0.5
-    actual_hours: 0
+    actual_hours: 0.03
     actual_source: measured
-    residual_hours: 0.5
+    residual_hours: 0
     change_kind: added
     parent_slice: null
     owns: [THEME-V103-PUBLICATION]
