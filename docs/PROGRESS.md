@@ -18,7 +18,7 @@
 - Models: n/a (no agents configured — Assistant config: none)
 - Keel baseline: v7.3.2 — current mechanical sweep in docs/keel-conformance.md (D-015)
 - Durability: Git remote origin on GitHub (verified this session)
-- Autonomy: automatic for the explicitly approved issue1/v1.0.2 maintenance task (D-015)
+- Autonomy: automatic for the explicitly approved maintenance and v1.0.3 publication task (D-015, D-022)
 - Notify: coordinating DeCA session; no independent out-of-band recipient authorised
 - Chaining: **supervised** — parent DeCA release coordinator owns continuation and publication
 - Chaining model: n/a (supervised)
@@ -51,7 +51,7 @@
 
 ## Current position
 - Phase: 7 done — project in MAINTENANCE (references/maintenance.md)
-- Next action: T-001–T-003 and T-005 complete: reconciled controls, issue1 fix, 84-assertion red/green including short-window fallback and exact v1.0.2 package verified. T-004 complete: main557b0e0 tagged v1.0.2; release published and both downloaded assets verified (46 checksums). Parent DeCA coordinator now consumes the released theme. Historical VoiceOver and broad harness deferrals remain outside this task.
+- Next action: T-008 active: owner approved v1.0.3 publication/consumption (D-022). Integrate, run full gate, package, publish and download-verify. T-006 and T-007 complete candidate on fix/entry-language-button-aria: native language buttons use aria-pressed, axe8/8 and reflow84/84 pass. Exact asset override8/8 passes; old published asset negative control8/8 fails, proving override selection. Exact version approval now recorded in D-022; publication verification remains in progress. Published v1.0.2 is immutable.
 
 ## Open items
 - Unresolved user questions: none
@@ -64,4 +64,4 @@
 - keel-skill changes to APPLY this theme (guide-theme.md, phase-6, guide-qa, maintenance) — after v1.0.0 release, per docs/PLAN-KEEL-DOCS-THEME.md §4 — NEVER bump keel-skill version without explicit instruction
 - v5.0.0 test-automation harness (keel-doctor, browser drivers, driven tests, keel-verify + checks, 01/02/03/05 back-fill) — deferred per D-014 — revisit if the theme gains runtime behavior; a keel-verify parity check for theme/_theme ≡ demo/_theme is the first candidate
 
-Last updated: 2026-10-29 — approved v1.0.2 candidate, issue1 reflow and short-viewport fallback; Keel v7.3.2 reconciliation (D-015). Guided AT: K1–K7 done; V1–V6 remain pending.
+Last updated: 2026-10-29 — unpublished entry-language accessibility correction candidate (D-020); published v1.0.2 remains immutable. Guided AT: K1–K7 done; V1–V6 remain pending.

@@ -88,7 +88,7 @@ F1 resolution: skip-link added to entry (template + demo index) replicating temp
 | .copy-btn click | clipboard API → textarea/execCommand fallback (file://); "Copiado" 1600ms + aria-live | §6 |
 | Search input | filter KEEL_SEARCH_INDEX by page lang+audience; diacritic/case-insensitive; combobox+listbox; ↑↓ Enter Esc; count announced; empty + no-index states | §7 |
 | "/" key | focuses search (unless typing in a field) | §7 |
-| Entry lang buttons | show/hide [data-lang-panel]; aria-selected | §8 |
+| Entry lang buttons | show/hide [data-lang-panel]; aria-pressed | §8 |
 | Print | print.css: chrome hidden, one column, URLs shown, break-inside avoided | §9 |
 | System prefs | dark via prefers-color-scheme; reduced-motion kills transitions; forced-colors per a11y §9 | §10 |
 
@@ -156,3 +156,11 @@ No inbound calls or externally reachable endpoint exists; no tunnel applies. Liv
 Real run in playground: unchanged baseline yielded 12 failures / 74 assertions in the twelve-locale fixture (widths 320/390/768, both directions and modes). The identical test is rerun on the corrected source; durable red/green reports live in docs/verification/. The test exercises keyboard search, drawer open/Escape, native anchors with and without JS, and four short viewport heights. D-013 VoiceOver items remain unverified; this regression is not a full accessibility audit.
 
 Short-window review correction (T-005): when header height plus12 reaches viewport height, private data-header-sticky becomes false, activeHeaderOffset and CSS --header-h become0, and header z-index returns auto. The normal-flow header can scroll away, native/JS anchors remain visible, and the drawer starts at0 above the header. Height-only resize recalculates the mode even when header size is unchanged. Regression now includes220 and180px heights, anchor visibility, unobscured drawer/Escape, and sticky restoration at500px. Original6380286 short-window behavior fails before this correction. Earlier300/360 scoped-band evidence is superseded by the stronger84-assertion run.
+
+### Entry language accessibility correction (T-006)
+
+Plain native language buttons use aria-pressed, not aria-selected (which requires a supported selection role). The template and demo initialise the pressed state; initEntryLang updates it with the visible language panel. Native Space/Enter activation remains intact. Search listbox options and code tabs keep their valid aria-selected semantics. No layout, CSS, strings or h1 changes; immutable Design handoff remains unchanged, this specification records the corrective adaptation. Existing consumers must also replace aria-selected with aria-pressed on their entry language buttons; replacing theme assets alone does not remove old attributes.
+
+Real playground: demo/index.html fromfile:// at390×844. InitialES, SpaceEN, EnterES and mouseEN each verify exact pressed/hidden state and run axe WCAG2A/AA,2.1A/AA,2.2AA tags. Unchangedpublishedsource:8/8 failures (including critical aria-allowed-attr on2buttons); candidate8/8 pass,zeroaxeviolations. Existing reflow84/84 passes. Reports docs/verification/entry-aria-{red,green}.json and entry-aria-reflow-green.json. No new external requests or runtime dependencies.
+
+T-007 exact-asset verification: entry harness copies demo/ into temporary storage, wholesale replaces _theme/ when THEME_ASSET_ROOT is set and cleans up in finally. Unchanged8assertions pass against source and a separate exact unversioned copy of the asset unit. Negative control selecting unchangedv1.0.2assets fails8/8, proving the override is actually exercised; original entry-aria-red.json remains unchanged. Reports entry-aria-override-{green,red}.json. This helper does not render/stamp a release entry template or validate product version markers; package.sh and separate packaging integrity verification own stamping.

@@ -30,9 +30,9 @@
       <p class="entry__version">{{ product.version }}</p>
 
       <!-- Language selector: one button per available locale. JS toggles the panels
-           below (data-lang-panel). Current locale = aria-selected="true". -->
+           below (data-lang-panel). Current locale = aria-pressed="true". -->
       <div class="switcher switcher--lang" role="group" aria-label="{{ str.language }}" style="margin-block-start:var(--sp-6)">
-        <button class="switcher__item entry-lang__btn" type="button" data-lang="{{ locale }}" aria-selected="true">{{ locale|upper }}</button>
+        <button class="switcher__item entry-lang__btn" type="button" data-lang="{{ locale }}" aria-pressed="true">{{ locale|upper }}</button>
       </div>
 
       <!-- repeat: one panel per locale; only the active one is visible -->

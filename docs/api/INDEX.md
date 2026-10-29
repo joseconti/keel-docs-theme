@@ -12,4 +12,4 @@
 | `html[lang] [dir] [data-audience] [data-root]` | page behavior attributes | templates / every page | SPEC/interactions.md preamble | drive i18n, RTL, search scoping and path resolution |
 | `.skip-link` → `#main` | landmark contract | every page (incl. entry, A1) | SPEC/accessibility.md §5 | first tab stop; focus order authority |
 
-| Maintenance CLI helpers | development CLI | `scripts/keel-*`, `scripts/verify-reflow.cjs` | [maintenance.md](maintenance.md) | timing, plans, handoff, verification and isolated assignment controls; excluded from runtime package |
+| Maintenance CLI helpers | development CLI | `scripts/keel-*`, `scripts/verify-reflow.cjs`, `scripts/verify-entry-a11y.cjs` | [maintenance.md](maintenance.md) | timing, plans, handoff, verification and isolated assignment controls; excluded from runtime package |
