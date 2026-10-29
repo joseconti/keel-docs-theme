@@ -132,6 +132,28 @@ slices:
       parallel: serial
       serial_reason: "One bounded accessibility correction and exclusive browser"
 
+  - id: T-007
+    title: "Verify exact packaged entry assets through isolated fixture"
+    status: done
+    original_hours: 0.1
+    actual_hours: 0.01
+    actual_source: measured
+    residual_hours: 0
+    change_kind: added
+    parent_slice: null
+    owns: [THEME-ENTRY-PACKAGE-REGRESSION]
+    estimate_changes: []
+    depends_on: [T-006]
+    criteria: [THEME-ENTRY-PACKAGE-REGRESSION]
+    execution:
+      write_paths: [scripts/verify-entry-a11y.cjs, docs/]
+      contracts:
+        reads: [entry-language-state]
+        writes: []
+      exclusive_resources: [theme-browser]
+      parallel: serial
+      serial_reason: "Exclusive browser after coordinating app verifier completes"
+
 ---
 
 # Maintenance sprint 1

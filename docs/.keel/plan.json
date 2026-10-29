@@ -121,32 +121,49 @@
                     "depends_on": [
                         "T-004"
                     ]
+                },
+                {
+                    "id": "T-007",
+                    "title": "Verify exact packaged entry assets through isolated fixture",
+                    "status": "done",
+                    "original_hours": 0.1,
+                    "residual_hours": 0,
+                    "change_kind": "added",
+                    "parent_slice": "null",
+                    "owns": [
+                        "THEME-ENTRY-PACKAGE-REGRESSION"
+                    ],
+                    "actual_hours": 0.01,
+                    "actual_source": "measured",
+                    "depends_on": [
+                        "T-006"
+                    ]
                 }
             ],
-            "original_estimated_hours": 2.5,
-            "completed_original_hours": 2.5,
-            "actual_hours": 0.21,
+            "original_estimated_hours": 2.6,
+            "completed_original_hours": 2.6,
+            "actual_hours": 0.22,
             "remaining_hours": 0,
-            "deviation_hours": -2.29,
+            "deviation_hours": -2.38,
             "percent_done": 100,
-            "pace_factor": 0.084,
+            "pace_factor": 0.084615,
             "projected_remaining_hours": 0
         }
     ],
     "totals": {
-        "slices": 6,
-        "original_estimated_hours": 2.5,
-        "completed_original_hours": 2.5,
-        "actual_hours": 0.21,
+        "slices": 7,
+        "original_estimated_hours": 2.6,
+        "completed_original_hours": 2.6,
+        "actual_hours": 0.22,
         "remaining_hours": 0,
-        "deviation_hours": -2.29,
-        "pace_factor": 0.084,
+        "deviation_hours": -2.38,
+        "pace_factor": 0.084615,
         "projected_remaining_hours": 0,
         "pace_sample": {
-            "slices": 6,
-            "estimated_hours": 2.5,
-            "actual_hours": 0.21,
-            "deviation_hours": -2.29
+            "slices": 7,
+            "estimated_hours": 2.6,
+            "actual_hours": 0.22,
+            "deviation_hours": -2.38
         },
         "percent_done": 100
     },

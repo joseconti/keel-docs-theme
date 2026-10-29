@@ -51,7 +51,7 @@
 
 ## Current position
 - Phase: 7 done — project in MAINTENANCE (references/maintenance.md)
-- Next action: T-006 complete candidate on fix/entry-language-button-aria: native language buttons use aria-pressed, axe8/8 and reflow84/84 pass. Await parent review and separate owner-approved exact version before integration/tag/release. Published v1.0.2 is immutable.
+- Next action: T-006 and T-007 complete candidate on fix/entry-language-button-aria: native language buttons use aria-pressed, axe8/8 and reflow84/84 pass. Exact asset override8/8 passes; old published asset negative control8/8 fails, proving override selection. Await parent review and separate owner-approved exact version before integration/tag/release. Published v1.0.2 is immutable.
 
 ## Open items
 - Unresolved user questions: none
