@@ -26,3 +26,7 @@ Release-packaging fix. No changes to the theme itself: `_theme/`, the three temp
 - Keep anchors readable without JavaScript. When the wrapped header fills a short window it scrolls normally, preserving content and drawer access; taller windows restore sticky positioning.
 - Include the previously committed high-contrast keyboard focus-ring correction.
 - Add a standalone synthetic twelve-locale browser regression; runtime remains dependency-free.
+
+## Unreleased
+
+- Correct entry language controls to native button aria-pressed semantics. Consumer entry markup must replace aria-selected with aria-pressed along with updating JS. No version assigned; published v1.0.2 unchanged.

@@ -110,6 +110,28 @@ slices:
       parallel: serial
       serial_reason: "Related edge fix, coordinator review and exclusive browser"
 
+  - id: T-006
+    title: "Correct entry language button ARIA state"
+    status: done
+    original_hours: 0.25
+    actual_hours: 0.01
+    actual_source: measured
+    residual_hours: 0
+    change_kind: added
+    parent_slice: null
+    owns: [THEME-ENTRY-ARIA]
+    estimate_changes: []
+    depends_on: [T-004]
+    criteria: [THEME-ENTRY-ARIA]
+    execution:
+      write_paths: [theme/templates/template-entry.html, theme/_theme/js/theme.js, demo/index.html, demo/_theme/js/theme.js, scripts/, docs/, CHANGELOG.md]
+      contracts:
+        reads: [theme-layout-contract]
+        writes: [entry-language-state]
+      exclusive_resources: [theme-browser]
+      parallel: serial
+      serial_reason: "One bounded accessibility correction and exclusive browser"
+
 ---
 
 # Maintenance sprint 1

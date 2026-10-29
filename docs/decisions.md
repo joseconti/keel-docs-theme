@@ -135,3 +135,7 @@ Owner explicitly authorises themev1.0.2 publication via coordinating DeCA sessio
 ## D-019 — Approved v1.0.2 publication verified
 
 Parent owner explicitly approves publication and DeCA consumption. Main557b0e0 tagged v1.0.2, both assets attached, downloaded and verified46/46. T-004 complete; no production DeCA deployment implied. Release verification metadata corrects superseded worker ZIP hash; runtime bytes unchanged after publication.
+
+## D-020 — Entry language button semantics correction
+
+2026-10-29. Release gate found aria-selected on native entry language buttons (critical axe aria-allowed-attr). Coordinator authorises a bounded upstream correction candidate; no product version, tag or publication is authorised by this maintenance task. Use native toggle-button aria-pressed consistently in source template, demo and initEntryLang. Preserve keyboard behavior and layout; h1 best-practice advisory is outside this fix. Published v1.0.2 remains immutable. Consumers must adjust their entry markup as well as vendored JS. T-006 records the estimate and measured browser RED/GREEN. No new issue or reporter contact.

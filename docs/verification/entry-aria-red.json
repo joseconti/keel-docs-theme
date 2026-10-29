@@ -1,0 +1,155 @@
+{
+  "checks": 8,
+  "failed": 8,
+  "failures": [
+    {
+      "label": "state/es",
+      "detail": {
+        "buttons": [
+          {
+            "lang": "es",
+            "pressed": null,
+            "selected": true
+          },
+          {
+            "lang": "en",
+            "pressed": null,
+            "selected": true
+          }
+        ],
+        "panels": [
+          {
+            "lang": "es",
+            "hidden": false
+          },
+          {
+            "lang": "en",
+            "hidden": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "axe/es",
+      "detail": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "label": "state/en",
+      "detail": {
+        "buttons": [
+          {
+            "lang": "es",
+            "pressed": null,
+            "selected": true
+          },
+          {
+            "lang": "en",
+            "pressed": null,
+            "selected": true
+          }
+        ],
+        "panels": [
+          {
+            "lang": "es",
+            "hidden": true
+          },
+          {
+            "lang": "en",
+            "hidden": false
+          }
+        ]
+      }
+    },
+    {
+      "label": "axe/en",
+      "detail": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "label": "state/es",
+      "detail": {
+        "buttons": [
+          {
+            "lang": "es",
+            "pressed": null,
+            "selected": true
+          },
+          {
+            "lang": "en",
+            "pressed": null,
+            "selected": true
+          }
+        ],
+        "panels": [
+          {
+            "lang": "es",
+            "hidden": false
+          },
+          {
+            "lang": "en",
+            "hidden": true
+          }
+        ]
+      }
+    },
+    {
+      "label": "axe/es",
+      "detail": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "label": "state/en",
+      "detail": {
+        "buttons": [
+          {
+            "lang": "es",
+            "pressed": null,
+            "selected": true
+          },
+          {
+            "lang": "en",
+            "pressed": null,
+            "selected": true
+          }
+        ],
+        "panels": [
+          {
+            "lang": "es",
+            "hidden": true
+          },
+          {
+            "lang": "en",
+            "hidden": false
+          }
+        ]
+      }
+    },
+    {
+      "label": "axe/en",
+      "detail": [
+        {
+          "id": "aria-allowed-attr",
+          "impact": "critical",
+          "count": 2
+        }
+      ]
+    }
+  ],
+  "errors": []
+}
