@@ -3,6 +3,9 @@
   "checksum_entries": 46,
   "checksums_valid": true,
   "theme_bytes_exact_after_version_stamp": true,
-  "zip_sha256": "f89b38caf9b636ddf3284297796e30b505e2fd9816ccafb9e3bcdc10eebde180",
-  "checksums_sha256": "b3326ba2fbc43425157b8db035aa34cb0b9e58925b6b8feda444db21f3d044d6"
+  "zip_sha256": "8e6b5c95ae80a5fe2502dfec31fe4df2241658bfedc5660335ffce1045cf4255",
+  "checksums_sha256": "c4fdd952e1f506bcd0b3af2201112888f5a812fda7906bc6cb6bc6297875e063",
+  "release": "https://github.com/joseconti/keel-docs-theme/releases/tag/v1.0.2",
+  "downloaded_asset_checksums_verified": true,
+  "browser_assertions": 84
 }

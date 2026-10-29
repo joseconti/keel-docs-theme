@@ -389,7 +389,7 @@
     var btns = $all(".entry-lang__btn");
     if (!btns.length) return;
     function set(lang) {
-      btns.forEach(function (b) { b.setAttribute("aria-selected", String(b.getAttribute("data-lang") === lang)); });
+      btns.forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-lang") === lang)); });
       $all("[data-lang-panel]").forEach(function (p) { p.hidden = p.getAttribute("data-lang-panel") !== lang; });
     }
     btns.forEach(function (b) { b.addEventListener("click", function () { set(b.getAttribute("data-lang")); }); });

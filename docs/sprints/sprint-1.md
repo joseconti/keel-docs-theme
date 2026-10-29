@@ -69,11 +69,11 @@ slices:
       serial_reason: "Linear maintenance dependency and coordinator-owned state; sole browser"
   - id: T-004
     title: "Coordinator publication and release asset read-back"
-    status: not-started
+    status: done
     original_hours: 0.25
-    residual_hours: 0.25
-    actual_hours: 0
+    actual_hours: 0.09
     actual_source: measured
+    residual_hours: 0
     change_kind: added
     parent_slice: null
     owns: [THEME-V102-PUBLICATION]
@@ -109,6 +109,73 @@ slices:
       exclusive_resources: [theme-browser]
       parallel: serial
       serial_reason: "Related edge fix, coordinator review and exclusive browser"
+
+  - id: T-006
+    title: "Correct entry language button ARIA state"
+    status: done
+    original_hours: 0.25
+    actual_hours: 0.01
+    actual_source: measured
+    residual_hours: 0
+    change_kind: added
+    parent_slice: null
+    owns: [THEME-ENTRY-ARIA]
+    estimate_changes: []
+    depends_on: [T-004]
+    criteria: [THEME-ENTRY-ARIA]
+    execution:
+      write_paths: [theme/templates/template-entry.html, theme/_theme/js/theme.js, demo/index.html, demo/_theme/js/theme.js, scripts/, docs/, CHANGELOG.md]
+      contracts:
+        reads: [theme-layout-contract]
+        writes: [entry-language-state]
+      exclusive_resources: [theme-browser]
+      parallel: serial
+      serial_reason: "One bounded accessibility correction and exclusive browser"
+
+  - id: T-007
+    title: "Verify exact packaged entry assets through isolated fixture"
+    status: done
+    original_hours: 0.1
+    actual_hours: 0.01
+    actual_source: measured
+    residual_hours: 0
+    change_kind: added
+    parent_slice: null
+    owns: [THEME-ENTRY-PACKAGE-REGRESSION]
+    estimate_changes: []
+    depends_on: [T-006]
+    criteria: [THEME-ENTRY-PACKAGE-REGRESSION]
+    execution:
+      write_paths: [scripts/verify-entry-a11y.cjs, docs/]
+      contracts:
+        reads: [entry-language-state]
+        writes: []
+      exclusive_resources: [theme-browser]
+      parallel: serial
+      serial_reason: "Exclusive browser after coordinating app verifier completes"
+
+
+  - id: T-008
+    title: "Publish owner-approved v1.0.3 and verify downloaded assets"
+    status: in-progress
+    original_hours: 0.5
+    actual_hours: 0
+    actual_source: measured
+    residual_hours: 0.5
+    change_kind: added
+    parent_slice: null
+    owns: [THEME-V103-PUBLICATION]
+    estimate_changes: []
+    depends_on: [T-006, T-007]
+    criteria: [THEME-V103-PUBLICATION]
+    execution:
+      write_paths: [CHANGELOG.md, docs/]
+      contracts:
+        reads: [entry-language-state]
+        writes: [theme-maintenance-state]
+      exclusive_resources: [theme-browser]
+      parallel: serial
+      serial_reason: "Release integration, state and exclusive browser owned by this coordinator"
 
 ---
 

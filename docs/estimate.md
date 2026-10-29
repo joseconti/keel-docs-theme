@@ -21,3 +21,7 @@ estimates are unchanged. Session actuals come from scripts/keel-time; cross-proj
 coordination and this project ledger are not to be blindly summed as elapsed time.
 
 T-005 coordinator review correction adds0.25h for a reproduced short-window regression within the approved v1.0.2 repair. Original T-001–T-004 estimates are unchanged. Revised maintenance baseline2.25h AI work plus supervision; completed candidate slices2h estimated, remaining publication T-0040.25h.
+
+T-006 adds0.25h AI plus supervision for the entry-language accessibility correction candidate. Publication/version approval is outside this slice; published estimates are unchanged.
+
+T-007 adds0.1h AI plus supervision for exact-asset entry fixture verification; no product or publication scope added.

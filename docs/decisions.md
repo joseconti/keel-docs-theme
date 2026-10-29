@@ -131,3 +131,20 @@ T-005 review correction (owner authorised release scope, coordinator review): pr
 ## D-018 — Publication metadata and tool provenance
 
 Owner explicitly authorises themev1.0.2 publication via coordinating DeCA session. Preserve chronological CHANGELOG order; add upstreamGPLtext/provenance for separate copied maintenance helpers, without changing MIT theme runtime or consumable package scope. Parent performs main integration/tag/release and asset download verification.
+
+## D-019 — Approved v1.0.2 publication verified
+
+Parent owner explicitly approves publication and DeCA consumption. Main557b0e0 tagged v1.0.2, both assets attached, downloaded and verified46/46. T-004 complete; no production DeCA deployment implied. Release verification metadata corrects superseded worker ZIP hash; runtime bytes unchanged after publication.
+
+## D-020 — Entry language button semantics correction
+
+2026-10-29. Release gate found aria-selected on native entry language buttons (critical axe aria-allowed-attr). Coordinator authorises a bounded upstream correction candidate; no product version, tag or publication is authorised by this maintenance task. Use native toggle-button aria-pressed consistently in source template, demo and initEntryLang. Preserve keyboard behavior and layout; h1 best-practice advisory is outside this fix. Published v1.0.2 remains immutable. Consumers must adjust their entry markup as well as vendored JS. T-006 records the estimate and measured browser RED/GREEN. No new issue or reporter contact.
+
+## D-021 — Exact entry asset verification fixture
+
+2026-10-29. Coordinator requests a release-reproduction helper before any separate version approval. T-007 copies public demo to a disposable directory and optionally replaces its complete _theme unit from THEME_ASSET_ROOT, matching the reflow harness. All8existing assertions and original RED proof remain unchanged. Fixture cleanup always runs, including browser-launch failure. Production code, template placeholders and published v1.0.2 are unchanged; no version/package/tag/release created by this slice.
+
+
+## D-022 — Owner-approved v1.0.3 publication and consumption
+
+2026-10-29. Owner explicitly answers yes to publishing and consuming theme v1.0.3. This authorises integration of T-006/T-007 through develop into main, version1.0.3 packaging, annotated tag and GitHub release with both verified downloadable assets. T-008 owns publication and fresh download verification; the DeCA coordinator owns consumer updates. Published v1.0.2 remains immutable. No production deployment or new assistive-technology result is implied. The existing scoped automatic autonomy applies to this approved release.
