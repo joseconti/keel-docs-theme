@@ -1,0 +1,267 @@
+#!/bin/sh
+# Keel v5.15.0 / v5.15.1 — el turno que simplemente SE PARA. (UNBREAKABLE)
+#
+# `scripts/keel-close` y toda la maquinaria de encadenado comparten una suposición invisible:
+# describen una sesión que DECIDE que ha terminado. Un turno que simplemente ACABA —sin decisión,
+# sin cierre, sin traspaso— no pasa por ninguno de esos mecanismos y es invisible para todos.
+#
+# Medido en otro proyecto: CERO disparos de encadenado en una ventana de diecisiete horas que
+# contenía dos sesiones de trabajo completas. Diez horas muertas, y nada funcionando mal: el
+# encadenado no falló, es que nadie se lo pidió.
+#
+# LAS CINCO REGLAS
+#   1. Bloquea la parada en los tres estados que Keel llama UNBREAKABLE-rotos: trabajo sin
+#      commitear, commits sin publicar, o un traspaso que ya no describe HEAD.
+#   2. Si no, bloquea UNA vez más para decir que la cola no está vacía: al final de un turno, lo
+#      normal pasa a ser «sigue» en vez de «espera a una persona».
+#   3. Nunca gira en bucle. Un bloqueo que no cambió NADA DE LO QUE ÉL MISMO NOMBRÓ es el último, y
+#      hay un tope por hora. Los dos se leen de estado registrado, nunca del optimismo.
+#   4. Cuando permite la parada, pasa la cola antes de callarse: lanza `scripts/keel-continue`.
+#      Un freno a ESTA sesión no es motivo para que el trabajo pare.
+#   5. Cualquier error interno sale por 0 y PERMITE la parada. Corre en cada turno, así que un
+#      gancho capaz de romper una sesión es peor que no tener gancho.
+#
+# LO QUE LEE ES EL ESTADO DE LA *SESIÓN*, NUNCA EL DEL DIRECTORIO (v5.15.1).
+# Las reglas 1 y 3 estaban escritas como hechos sobre el REPOSITORIO, y un mismo checkout puede
+# tener dos sesiones. Medido: la sesión A quedó bloqueada nombrando dos ficheros que la sesión B
+# había tocado ocho segundos antes y seguía editando. Dos consecuencias, y la segunda es la grave:
+#   - El remedio que ofrecía el bloqueo es lo que este propio skill prohíbe: «commitea a develop»
+#     significa `git add -A` en un árbol que no escribiste tú.
+#   - El freno anti-bucle no lo soltaba: la huella cubría el árbol entero, así que cada guardado de
+#     la otra sesión la cambiaba y «este bloqueo no cambió nada» no llegaba nunca. **No es un
+#     bloqueo que caduca: es un bloqueo renovado por el trabajo de otro.**
+# Por eso: antes de bloquear por trabajo sin commitear se establece si hay otra sesión viva en este
+# checkout y, si la hay, el gancho CEDE — permite la parada y lo DICE, nombrando a quién cede.
+# Ceder no renuncia a ninguna garantía: la mueve a la sesión que sí puede actuar, que lleva este
+# mismo gancho y será bloqueada por él en su propio turno.
+#
+# La concurrencia se DETECTA; la autoría no se atribuye nunca. Git registra que un fichero cambió,
+# jamás quién lo cambió, así que mapear ruta a PID es una conjetura — y este proyecto no publica
+# conjeturas como comprobaciones.
+
+set -u
+
+# Regla 5: pase lo que pase aquí dentro, la parada se permite.
+salir_permitiendo() { exit 0; }
+
+RAIZ=$(git rev-parse --show-toplevel 2>/dev/null) || salir_permitiendo
+cd "$RAIZ" 2>/dev/null || salir_permitiendo
+
+# El propio Claude Code marca los turnos en que el gancho ya actuó; sin esto, un bloqueo podría
+# encadenarse consigo mismo.
+[ "${stop_hook_active:-}" = "true" ] && salir_permitiendo
+
+. "$RAIZ/scripts/keel-session-pid.sh" 2>/dev/null || salir_permitiendo
+
+# El registro es DATOS (Keel v6.1.0): la sonda de «¿hay otra sesión viva aquí?» es un hecho de la
+# herramienta, así que sale de su FILA y no de una línea de este script. Sin fila o con el campo
+# vacío no se finge quietud: se cae en la segunda vía (marcas de tiempo), que es la que siempre
+# estuvo disponible.
+CONSULTA_VIVA=""
+if [ -r "$RAIZ/scripts/keel-tool-row.sh" ]; then
+    # shellcheck disable=SC1091
+    . "$RAIZ/scripts/keel-tool-row.sh" 2>/dev/null || true
+    if command -v keel_tool_row >/dev/null 2>&1 && keel_tool_row "$RAIZ" >/dev/null 2>&1; then
+        CONSULTA_VIVA="${KEEL_TOOL_LIVE_QUERY:-}"
+    fi
+fi
+otra_sesion_viva() {
+    [ -n "$CONSULTA_VIVA" ] || return 0
+    # shellcheck disable=SC2086
+    $CONSULTA_VIVA "$RAIZ" 2>/dev/null \
+        | grep -o '"pid"[^,]*' | grep -v "$(keel_session_pid_solo)" | head -1 || true
+}
+YO=$(keel_session_pid 2>/dev/null) || salir_permitiendo
+[ -n "$YO" ] || salir_permitiendo
+
+CLAVE=$(printf '%s' "$RAIZ" | tr -c 'A-Za-z0-9' '-')
+DIR_ESTADO="${XDG_STATE_HOME:-$HOME/.local/state}/keel"
+mkdir -p "$DIR_ESTADO" 2>/dev/null || salir_permitiendo
+# Regla 3 (v5.15.1): el registro se indexa por REPOSITORIO **Y SESIÓN**. Indexado solo por
+# directorio, dos sesiones compartían un historial anti-bucle y el bloqueo de una podía satisfacer
+# el «no cambió nada» de la OTRA — el mismo fallo con el signo cambiado.
+LOG="$DIR_ESTADO/stop-blocks-$CLAVE-$(printf '%s' "$YO" | tr -c 'A-Za-z0-9' '-').log"
+
+bloquea() {
+    # Huella: SOLO lo que este bloqueo nombra. Cubrir el árbol entero es lo que dejaba el freno
+    # inservible cuando otra sesión tecleaba al lado.
+    _huella=$(printf '%s' "$1" | shasum 2>/dev/null | cut -c1-16)
+    _ultima=$(tail -1 "$LOG" 2>/dev/null | cut -d' ' -f2)
+    if [ "$_huella" = "$_ultima" ]; then
+        echo "keel: este bloqueo no cambió nada de lo que nombró. No se repite." >&2
+        salir_permitiendo
+    fi
+    # Tope por hora.
+    _hace1h=$(( $(date +%s) - 3600 ))
+    _n=$(awk -v t="$_hace1h" '$1 > t' "$LOG" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "${_n:-0}" -ge 5 ]; then
+        echo "keel: tope de bloqueos por hora alcanzado. Se permite la parada." >&2
+        salir_permitiendo
+    fi
+    echo "$(date +%s) $_huella" >> "$LOG" 2>/dev/null
+    printf '%s\n' "$2" >&2
+    exit 2
+}
+
+# ---- Regla 1a · trabajo sin commitear, con CESIÓN si hay otra sesión viva -------------------
+SUCIO=$(git status --porcelain 2>/dev/null)
+if [ -n "$SUCIO" ]; then
+    OTRA=""
+    # Sonda de concurrencia: las mismas dos vías que ya exige la regla de escritura.
+    OTRA=$(otra_sesion_viva)
+    if [ -z "$OTRA" ]; then
+        # Segunda vía: ficheros tocados hace menos de 90 s que no ha tocado esta sesión.
+        # La línea de porcelain se PARSEA, no se corta (Keel v5.19.2): un renombrado es
+        # «R  viejo -> nuevo» y una ruta con espacios llega entrecomillada. Cortar por el
+        # último campo devolvía un trozo que no es un fichero, `stat` lo saltaba, y
+        # «nadie ha tocado nada» salía como si fuera una medición.
+        RECIENTES=""
+        ESTABLECIDO=0
+        NO_ESTABLECIDO=""
+        OLD_IFS=$IFS
+        IFS='
+'
+        for _linea in $SUCIO; do
+            _ruta=$(printf '%s' "$_linea" | cut -c4-)
+            # Renombrado/copia: la que existe en disco es la DESTINO.
+            case "$_ruta" in
+                *' -> '*) _ruta=${_ruta##* -> } ;;
+            esac
+            # Ruta entrecomillada por git (espacios, UTF-8 escapado): se desescapa.
+            case "$_ruta" in
+                '"'*'"') _ruta=$(printf '%b' "$(printf '%s' "$_ruta" | sed -e 's/^"//' -e 's/"$//')") ;;
+            esac
+            if [ -e "$_ruta" ]; then
+                ESTABLECIDO=1
+                if [ -n "$(find "$_ruta" -newermt '-90 seconds' 2>/dev/null)" ]; then
+                    RECIENTES="$RECIENTES $_ruta"
+                fi
+            else
+                # Un borrado, o el origen de un renombrado: NO ES SILENCIO, es «no consta».
+                NO_ESTABLECIDO="$NO_ESTABLECIDO $_ruta"
+            fi
+        done
+        IFS=$OLD_IFS
+        if [ -n "$RECIENTES" ]; then
+            OTRA="ficheros modificados hace segundos:$RECIENTES"
+        elif [ "$ESTABLECIDO" -eq 0 ]; then
+            # Ninguna entrada se pudo comprobar: la sonda NO CONTESTÓ. La cesión se queda
+            # apoyada solo en `claude agents`, que ya dijo que no. No se lee como quietud.
+            echo "keel: sonda de mtime NO ESTABLECIDA (ninguna ruta comprobable:$NO_ESTABLECIDO)." >&2
+        fi
+    fi
+
+    if [ -n "$OTRA" ]; then
+        # CEDE. Y se imprime como cesión, jamás como aprobado: un permiso que se lee como visto
+        # bueno es un resultado verde contestando otra pregunta.
+        echo "keel: CEDO la parada — hay otra sesión viva en este checkout." >&2
+        echo "      $OTRA" >&2
+        echo "      El trabajo sin commitear no es mío y no puedo commitearlo sin meter en mi" >&2
+        echo "      commit lo que otro está escribiendo. Quien lo escribió lleva este mismo" >&2
+        echo "      gancho y será bloqueado por él en su propio turno." >&2
+    else
+        bloquea "sucio:$SUCIO" "keel: hay trabajo SIN COMMITEAR y ninguna otra sesión viva en este checkout.
+      $(printf '%s\n' "$SUCIO" | head -5)
+      Commitea a develop antes de parar (UNBREAKABLE: nada queda en el árbol al acabar un bloque)."
+    fi
+fi
+
+# ---- Regla 1d · plan rezagado respecto al trabajo (Keel v5.21.0) ----------------------------
+# El último commit que toca algo que no es contabilidad del plan debe ser ancestro del último que
+# toca docs/sprints/. Cede a una sesión viva igual que la regla 1a: el plan de otra sesión en marcha
+# lo actualiza quien hace el trabajo. Huella: los DOS commits que nombra.
+if grep -q '^- Sprints: \*\*on\*\*' "$RAIZ/docs/PROGRESS.md" 2>/dev/null; then
+    _EXCL="':(exclude)docs/sprints' ':(exclude)docs/.keel' ':(exclude)docs/PROGRESS.md' ':(exclude)docs/sessions.md' ':(exclude)docs/token-ledger.md'"
+    T_TRAB=$(eval git log -1 --format=%H -- . $_EXCL 2>/dev/null)
+    T_PLAN=$(git log -1 --format=%H -- docs/sprints 2>/dev/null)
+    if [ -n "$T_TRAB" ] && [ -n "$T_PLAN" ] && ! git merge-base --is-ancestor "$T_TRAB" "$T_PLAN" 2>/dev/null; then
+        VIVA=""
+        VIVA=$(otra_sesion_viva)
+        if [ -n "$VIVA" ]; then
+            echo "keel: CEDO la parada — el plan va por detrás del trabajo, pero hay otra sesión viva ($VIVA)." >&2
+        else
+            bloquea "plan:$T_TRAB:$T_PLAN" "keel: el PLAN VA POR DETRÁS DEL TRABAJO.
+      $(printf '%s' "$T_TRAB" | cut -c1-7) no está reflejado en docs/sprints/ (último: $(printf '%s' "$T_PLAN" | cut -c1-7)).
+      Marca la slice (status/actual_hours), regenera scripts/keel-plan y commitea."
+        fi
+    fi
+fi
+
+# ---- Regla 1b · commits sin publicar (bloquea CEDA O NO: es un hecho sobre HEAD) ------------
+RAMA=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+SIN_PUBLICAR=$(git rev-list --count "origin/$RAMA..HEAD" 2>/dev/null || echo 0)
+if [ "${SIN_PUBLICAR:-0}" -gt 0 ]; then
+    bloquea "sinpublicar:$SIN_PUBLICAR:$(git rev-parse HEAD)" \
+"keel: hay $SIN_PUBLICAR commit(s) SIN PUBLICAR en $RAMA.
+      Publicar no escribe nada que no esté ya commiteado, así que esto bloquea ceda o no.
+      git push origin $RAMA"
+fi
+
+# ---- Regla 1c · traspaso que ya no describe HEAD --------------------------------------------
+TRASPASO="$RAIZ/docs/continuation-prompt.md"
+if [ -f "$TRASPASO" ]; then
+    C_TRAS=$(grep -m1 '^Commit:' "$TRASPASO" 2>/dev/null | sed 's/^Commit: *//')
+    C_HEAD=$(git rev-parse HEAD 2>/dev/null)
+    if [ -n "$C_TRAS" ] && [ "$C_TRAS" != "$C_HEAD" ]; then
+        bloquea "traspaso:$C_TRAS:$C_HEAD" \
+"keel: el traspaso describe $(printf '%s' "$C_TRAS" | cut -c1-7) y HEAD está en $(printf '%s' "$C_HEAD" | cut -c1-7).
+      Un traspaso que no es actual es peor que ninguno. Bórralo o regenéralo con scripts/keel-close."
+    fi
+fi
+
+# ---- Regla 2 · la cola no está vacía ---------------------------------------------------------
+if [ -f "$RAIZ/docs/PROGRESS.md" ]; then
+    # PARCHE LOCAL (18/08/2026) — no viene del skill; ver D-keel-1 en docs/decisions.md.
+    # La huella era `cola:$(git rev-parse HEAD)`, y esta regla existe para empujar a SEGUIR
+    # trabajando: trabajar commitea, commitear mueve HEAD, y HEAD era la huella. Obedecerla la
+    # rearmaba, asi que su propia promesa —«vuelve a parar y esto no se repetira»— solo podia
+    # cumplirse en la rama en que no se le hacia caso. Medido: 5 bloqueos en una sesion, tres de
+    # ellos reproducibles como cola:<HEAD> desde el log.
+    # La regla dice «bloquea UNA vez mas»: una vez por SESION. Por tanto huella CONSTANTE, y
+    # comprobada contra TODO el log de la sesion y no solo su ultima linea — entre medias puede
+    # haber quedado un bloqueo de la regla 1, que dejaria de tapar a este.
+    _h_cola=$(printf '%s' "cola:" | shasum 2>/dev/null | cut -c1-16)
+    if cut -d' ' -f2 "$LOG" 2>/dev/null | grep -qx "$_h_cola"; then
+        echo "keel: la cola ya se revisó en esta sesión; se comprueba el cierre antes de encadenar." >&2
+    else
+        bloquea "cola:" \
+"keel: antes de parar, mira si queda trabajo que NO dependa de nadie.
+      «Finish the queue»: un bloqueo se acota al ÍTEM, nunca a la sesión.
+      Si de verdad no queda nada independiente, vuelve a parar y esto no se repetirá."
+    fi
+fi
+
+# ---- Regla 4 · pasar la cola antes de callarse ------------------------------------------------
+# ESTE gancho es el SEGUNDO de los dos únicos invocadores de `scripts/keel-continue`, y es
+# subordinado al primero: cubre el caso que el cierre de sesión no alcanza, un turno que
+# simplemente ACABA. Por tanto dispara SOLO donde el cierre no disparó — y eso lo establece
+# leyendo el libro de disparos de la sesión, no interpretando la situación por su cuenta.
+#
+# POR QUÉ (Keel v5.20.0, medido en dos proyectos y en TODOS los cierres): el cierre disparaba
+# contra el traspaso H y reclamaba el recibo de H; su propio último commit ejecutaba
+# `.githooks/post-commit`, que BORRA el traspaso adrede; y esta regla llegaba después, se
+# encontraba sin traspaso, tomaba la fila DEGRADA correspondiente y abría una SEGUNDA ventana sin
+# ningún recibo que la frenara. Delegar la pregunta entera en una idempotencia indexada por
+# TRASPASO no podía funcionar: el traspaso ya no existe cuando esta regla corre.
+CHAINING=$(grep -m1 -o 'Chaining: \*\*[a-z]*\*\*' "$RAIZ/docs/PROGRESS.md" 2>/dev/null | sed 's/.*\*\*\(.*\)\*\*/\1/')
+if [ "$CHAINING" = "prefill" ] || [ "$CHAINING" = "start" ]; then
+    # Un turno ordinario no es un cierre: solo el paso 8 de keel-close autoriza encadenar.
+    CLAVE_CIERRE=$(printf '%s' "$RAIZ" | shasum 2>/dev/null | cut -c1-16)
+    CIERRE="$DIR_ESTADO/closeouts/$CLAVE_CIERRE-$(printf '%s' "$YO" | tr -c 'A-Za-z0-9' '-')"
+    HEAD_AHORA=$(git rev-parse HEAD 2>/dev/null || true)
+    if [ ! -f "$CIERRE" ] || [ "$(cat "$CIERRE" 2>/dev/null)" != "$HEAD_AHORA" ]; then
+        echo "keel-stop-hook: esta sesión no completó keel-close en HEAD; turno permitido sin encadenar." >&2
+        salir_permitiendo
+    fi
+    # La entrada se deriva EXACTAMENTE igual que en `scripts/keel-continue` —clave del repositorio
+    # troceada, identidad de sesión del ayudante compartido— o el freno no reconocería a nadie.
+    CLAVE_LEDGER=$(printf '%s' "$RAIZ" | shasum 2>/dev/null | cut -c1-16)
+    LEDGER="$DIR_ESTADO/fired-$CLAVE_LEDGER-$(printf '%s' "$YO" | tr -c 'A-Za-z0-9' '-')"
+    if [ -d "$LEDGER" ]; then
+        echo "keel-stop-hook: esta sesión YA disparó la cadena (entrada $LEDGER). No se dispara nada." >&2
+    else
+        [ -x "$RAIZ/scripts/keel-continue" ] && "$RAIZ/scripts/keel-continue" >/dev/null 2>&1 || true
+    fi
+fi
+
+salir_permitiendo

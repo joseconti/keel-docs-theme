@@ -1,0 +1,115 @@
+{
+  "checks": 74,
+  "failed": 12,
+  "failures": [
+    {
+      "label": "reflow/320/false/light",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/320/false/dark",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/320/true/light",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/320/true/dark",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/390/false/light",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/390/false/dark",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/390/true/light",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/390/true/dark",
+      "detail": {
+        "width": 1061,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/768/false/light",
+      "detail": {
+        "width": 1199,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/768/false/dark",
+      "detail": {
+        "width": 1199,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/768/true/light",
+      "detail": {
+        "width": 1199,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    },
+    {
+      "label": "reflow/768/true/dark",
+      "detail": {
+        "width": 1199,
+        "height": 60,
+        "offset": 60,
+        "contained": false
+      }
+    }
+  ],
+  "errors": []
+}

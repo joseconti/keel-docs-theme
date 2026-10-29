@@ -27,3 +27,9 @@ consumer project guide/            _theme/ vendored as-is · brand/ per project 
 - Integrity chain: release checksums → vendored `_theme/` verification → per-page `<meta name="keel-docs-theme">` version marker.
 
 Decisions: docs/decisions.md (D-001…D-009). Audit evidence: docs/BUILD-SPEC.md §1.
+
+## Header reflow maintenance (v1.0.2)
+
+The header wraps rather than imposing a fixed block height. Private initialization measures the rendered header and publishes the existing --header-h layout variable; sticky behavior is enabled only after measurement. CSS normal flow is the no-JS fallback. Scrollspy uses current header height plus twelve pixels and bounds its observer band for short windows. Both theme and demo carry identical assets. These are implementation details, with no new consumer API or i18n key. See BUILD-SPEC maintenance adaptation and docs/verification/issue1-{red,green}.json.
+
+Short-window fallback: data-header-sticky is private and enabled only if rendered height+12 is smaller than innerHeight. All offsets use activeHeaderOffset (zero in normal flow); header z-index is auto in fallback so the drawer can overlay it. Window height changes trigger recalculation even with unchanged header dimensions.
