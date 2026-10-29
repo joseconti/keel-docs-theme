@@ -41,3 +41,8 @@ Candidate revision T-005 supersedes the first ZIP checksum and shortwindow quali
 ## v1.0.2 published — 2026-10-29
 
 Owner-approved main integration557b0e0 and annotated tag v1.0.2. GitHub release published with actual attachments: keel-docs-theme-v1.0.2.zip756597bytes and checksums.txt4356bytes. Downloaded both again; all46 hashes pass. ZIP SHA2568e6b5c95ae80a5fe2502dfec31fe4df2241658bfedc5660335ffce1045cf4255; supersedes worker candidate hash after chronological changelog correction. Source and exact package84/84 browser assertions, no JavaScript errors;40 contrast pairs pass. Helpers/provenance excluded from consumable. Reporter notified on issue1; no reporter closure or VoiceOver conformance claimed.
+
+
+## v1.0.3 candidate — 2026-10-29
+
+Owner approved publication and consumption (D-022). Source and exact stamped package pass84reflow plus8entry axe/keyboard assertions, no browser errors. All46manifest hashes and source-to-stamped-package byte parity pass. Whole-tree gitleaks finds zero leaks. Package SHA256 and sizes are recorded in docs/verification/v1.0.3-package.json. Published v1.0.2 remains immutable; entry consumers must replace aria-selected with aria-pressed alongside the complete theme update. Guided VoiceOver remains unverified.
