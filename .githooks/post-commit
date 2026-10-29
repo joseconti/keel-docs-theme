@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# A handoff that exists must be newer than the last commit.
+rm -f "$(git rev-parse --show-toplevel)/docs/continuation-prompt.md"

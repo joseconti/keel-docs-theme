@@ -1,0 +1,335 @@
+#!/usr/bin/env php
+<?php
+// keel-time — reloj de sesion (Keel v7.3.1, references/project-state.md "Session time"). Es lo UNICO que lee la hora:
+// cada subcomando lee el reloj del sistema y anade UNA linea a docs/.keel/clock.jsonl (gitignored).
+//   start [--plan S-1,S-2]         abre sesion (cierra la anterior sin `end` en su ULTIMO evento) e imprime el bloque de inicio
+//   slice-start <id>               abre el intervalo de la slice (cierra otra abierta como in-progress)
+//   slice-end <id> --status <s>    cierra y escribe actual_hours ACUMULADAS + actual_source: measured en su sprint (+ status)
+//   slice-record <id> --result <worker-result.json> --status <s>   intervalo propio de un worker (v7.3.1), via keel-clock
+//   pause <motivo> / resume        enmarca cada espera a la persona; lo pausado se resta
+//   end                            cierra intervalos, escribe docs/sessions.md e imprime el informe
+//   report                         informe de la sesion en curso, sin escribir nada
+// Horas = tiempo de IA mas supervision. Sin dependencias: PHP del proyecto.
+
+declare(strict_types=1);
+
+chdir(dirname(__DIR__));
+// Hora LOCAL en todo lo impreso (el fichero va en UTC). PHP de linea de comandos suele venir sin zona: la del proyecto.
+date_default_timezone_set(getenv('TZ') ?: 'Europe/Madrid');
+const LOG = 'docs/.keel/clock.jsonl';
+const SESIONES = 'docs/sessions.md';
+
+function ahora(): string { return gmdate('Y-m-d\TH:i:s\Z'); }
+function ts(string $iso): int { return (int) strtotime($iso); }
+function local(string $iso, string $fmt = 'H:i'): string { return date($fmt, ts($iso)); }
+function h(float $seg): float { return round($seg / 3600, 2); }
+
+function eventos(): array
+{
+    if (!is_file(LOG)) { return []; }
+    $out = [];
+    foreach (file(LOG, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $l) {
+        $e = json_decode($l, true);
+        if (is_array($e)) { $out[] = $e; }
+    }
+    return $out;
+}
+function anotar(array $e): void
+{
+    @mkdir(dirname(LOG), 0775, true);
+    file_put_contents(LOG, json_encode(['schema' => 'keel.clock/1'] + $e, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND);
+}
+/** Eventos de la sesion abierta (sin session-end) o null. */
+function sesionAbierta(array $ev): ?array
+{
+    $sesion = null;
+    foreach ($ev as $e) {
+        if ($e['event'] === 'session-start') { $sesion = ['id' => $e['session'], 'eventos' => [$e]]; continue; }
+        if ($sesion !== null && ($e['session'] ?? null) === $sesion['id']) {
+            $sesion['eventos'][] = $e;
+            if ($e['event'] === 'session-end') { $sesion = null; }
+        }
+    }
+    return $sesion;
+}
+function plan(): array
+{
+    $lines = [];
+    $status = 0;
+    exec('php scripts/keel-plan --stdout 2>/dev/null', $lines, $status);
+    if ($status !== 0) { throw new RuntimeException('keel-time: no se pudo leer el plan desde sus sprints'); }
+    return json_decode(implode("\n", $lines), true, 512, JSON_THROW_ON_ERROR);
+}
+function sliceInfo(string $id): ?array
+{
+    foreach ((plan()['sprints'] ?? []) as $sp) {
+        foreach ($sp['slices'] as $sl) {
+            if ($sl['id'] === $id) { return $sl + ['file' => $sp['file'], 'sprint' => $sp['sprint']]; }
+        }
+    }
+    return null;
+}
+
+/** Segundos trabajados por slice en esta sesion (intervalos menos pausas), y pausa total. */
+function medir(array $sesion, string $hasta): array
+{
+    $abiertos = [];
+    $porSlice = [];
+    $pausas = [];
+    $pausaIni = null;
+    $estados = [];
+    foreach ($sesion['eventos'] as $e) {
+        switch ($e['event']) {
+            case 'slice-start': $abiertos[$e['slice']] = ts($e['at']); break;
+            case 'slice-end':
+                if (isset($abiertos[$e['slice']])) {
+                    $porSlice[$e['slice']][] = [$abiertos[$e['slice']], ts($e['at'])];
+                    unset($abiertos[$e['slice']]);
+                }
+                $estados[$e['slice']] = $e['status'] ?? 'done';
+                break;
+            case 'pause': $pausaIni = ts($e['at']); break;
+            case 'resume': if ($pausaIni !== null) { $pausas[] = [$pausaIni, ts($e['at'])]; $pausaIni = null; } break;
+        }
+    }
+    $fin = ts($hasta);
+    if ($pausaIni !== null) { $pausas[] = [$pausaIni, $fin]; }
+    foreach ($abiertos as $id => $ini) { $porSlice[$id][] = [$ini, $fin]; $estados[$id] = $estados[$id] ?? 'in-progress'; }
+    $seg = [];
+    foreach ($porSlice as $id => $ints) {
+        $t = 0;
+        foreach ($ints as [$a, $b]) {
+            $t += max(0, $b - $a);
+            foreach ($pausas as [$pa, $pb]) { $t -= max(0, min($b, $pb) - max($a, $pa)); }
+        }
+        $seg[$id] = max(0, $t);
+    }
+    $pausaTotal = 0;
+    foreach ($pausas as [$pa, $pb]) { $pausaTotal += max(0, $pb - $pa); }
+    return ['seg' => $seg, 'estados' => $estados, 'pausa' => $pausaTotal, 'abiertos' => array_keys($abiertos)];
+}
+
+/** Suma horas medidas a la slice en su fichero de sprint (acumulado) y fija su estado. */
+function escribirActual(string $id, float $horas, ?string $status): void
+{
+    $info = sliceInfo($id);
+    if ($info === null) { fwrite(STDERR, "keel-time: slice {$id} no esta en el plan\n"); return; }
+    $txt = (string) file_get_contents($info['file']);
+    // Entre dos slices puede haber una linea en blanco: sin admitirla el bloque no casaba y la funcion volvia
+    // sin escribir nada mientras `slice-end` decia «done» (S-311, 06/10/2026).
+    $re = '/(  - id: ' . preg_quote($id, '/') . '\n(?:    .*\n)*?)(?=\n*  - id: |\n*---)/';
+    if (!preg_match($re, $txt, $m)) { fwrite(STDERR, "keel-time: no se ha podido escribir {$id} en {$info['file']}\n"); return; }
+    $bloque = $m[1];
+    $previo = preg_match('/    actual_hours: ([0-9.]+)/', $bloque, $x) && preg_match('/    actual_source: measured/', $bloque) ? (float) $x[1] : 0.0;
+    $nuevo = round($previo + $horas, 2);
+    $b = preg_replace('/    actual_hours: .*\n/', '', $bloque);
+    $b = preg_replace('/    actual_source: .*\n/', '', $b);
+    if ($status !== null) {
+        $b = preg_replace('/    status: .*\n/', "    status: {$status}\n", $b);
+        if (in_array($status, ['done', 'dropped'], true)) {
+            $b = preg_replace('/    residual_hours: .*\n/', "    residual_hours: 0\n", $b);
+        }
+    }
+    $b = preg_replace('/(    original_hours: .*\n)/', "$1    actual_hours: {$nuevo}\n    actual_source: measured\n", $b, 1);
+    file_put_contents($info['file'], str_replace($bloque, $b, $txt));
+    exec('php scripts/keel-plan >/dev/null');
+}
+
+/**
+ * Keel v7.3.1: horas de slice sumadas, concurrencia maxima, rendimiento y base de la proyeccion, calculadas por el
+ * ayudante canonico `scripts/keel-clock` (copia de keel_clock.py). Sin Python 3 se aplican las mismas reglas aqui
+ * para el trabajo en serie, que es el de este proyecto (`Parallel development: off`, D-keel-7-1).
+ */
+function medidaCanonica(array $sesion, string $hasta, array $m, float $estHecho, float $activas): array
+{
+    $out = null;
+    if (is_file('scripts/keel-clock')) {
+        $lines = [];
+        $status = 1;
+        exec('python3 scripts/keel-clock report --log ' . escapeshellarg(LOG) . ' --session ' . escapeshellarg((string) $sesion['id'])
+            . ' --now ' . escapeshellarg($hasta) . ' --plan docs/.keel/plan.json --sessions ' . escapeshellarg(SESIONES) . ' 2>/dev/null', $lines, $status);
+        $j = $status === 0 ? json_decode(implode("\n", $lines), true) : null;
+        if (is_array($j) && !isset($j['error'])) {
+            $out = ['slice' => round((float) $j['summed_slice_hours'], 2), 'conc' => (int) $j['max_concurrency'],
+                    'thr' => $j['throughput'] === null ? null : round((float) $j['throughput'], 2),
+                    'base' => (string) ($j['projection']['basis'] ?? 'pace'), 'fuente' => 'keel-clock'];
+        }
+    }
+    if ($out === null) {
+        $out = ['slice' => h((float) array_sum($m['seg'])), 'conc' => $m['seg'] === [] ? 0 : 1,
+                'thr' => $activas > 0 ? round($estHecho / $activas, 2) : null, 'base' => 'pace', 'fuente' => 'keel-time'];
+    }
+    if ((float) (plan()['totals']['remaining_hours'] ?? 0) == 0.0) { $out['base'] = 'none'; }
+    return $out;
+}
+
+function informe(array $sesion, string $hasta, bool $escribir): void
+{
+    $m = medir($sesion, $hasta);
+    $ini = $sesion['eventos'][0];
+    $planned = $ini['planned'] ?? [];
+    $wall = ts($hasta) - ts($ini['at']);
+    $active = h(max(0, $wall - $m['pausa']));
+    echo "Sesion — " . local($ini['at']) . " → " . local($hasta) . " (" . h($wall) . " h de reloj, " . h($m['pausa']) . " h en pausa, {$active} h activas)\n";
+    echo "Planificado al inicio: " . ($planned ? implode(', ', $planned) : '—') . " — " . ($ini['planned_hours'] ?? 0) . " h\n";
+    $est = 0.0; $act = 0.0; $hechas = []; $noHechas = []; $estimatedDone = false;
+    foreach (array_unique(array_merge(array_keys($m['seg']), array_keys($m['estados']))) as $id) {
+        $s = $m['seg'][$id] ?? 0;
+        $info = sliceInfo($id);
+        $e = (float) ($info['original_hours'] ?? 0);
+        $st = $m['estados'][$id] ?? 'in-progress';
+        if ($st === 'done') {
+            $lifetime = (float) ($info['actual_hours'] ?? h($s));
+            $est += $e; $act += $lifetime;
+            $hechas[] = $id;
+            $source = ($info['actual_source'] ?? '') === 'estimated' ? 'estimado a posteriori' : 'medido acumulado';
+            if (($info['actual_source'] ?? '') === 'estimated') { $estimatedDone = true; }
+            echo "  Hecho: {$id} " . ($info['title'] ?? '') . " — estimado {$e} h, {$source} {$lifetime} h (" . sprintf('%+.2f', $lifetime - $e) . " h)" . (in_array($id, $planned, true) ? '' : ' [no planificado]') . "\n";
+        } else {
+            $noHechas[] = "{$id} (" . h($s) . " h)";
+            echo "  Sin terminar: {$id} " . ($info['title'] ?? '') . " — estimado {$e} h, " . h($s) . " h dedicadas\n";
+        }
+    }
+    $dev = round($act - $est, 2);
+    echo "Desviacion en lo terminado: estimado {$est} h → real registrado {$act} h (" . sprintf('%+.2f', $dev) . " h" . ($est > 0 ? ', ' . sprintf('%+.0f', 100 * $dev / $est) . ' %' : '') . ")" . ($estimatedDone ? ' (incluye tiempo estimado a posteriori)' : '') . "\n";
+    $can = medidaCanonica($sesion, $hasta, $m, $est, $active);
+    echo "Horas de slice (suma de los intervalos de cada slice): {$can['slice']} h · concurrencia maxima {$can['conc']}" . ($can['conc'] > 1 ? ' (paralelo — tiempo de trabajo solapado)' : ' (en serie)') . "\n";
+    echo 'Rendimiento: ' . ($can['thr'] === null ? 'no disponible — sin tiempo activo' : "{$est} h estimadas terminadas en {$active} h activas ({$can['thr']} h estimadas por hora de reloj)") . "\n";
+    $p = plan();
+    $quedan = (float) ($p['totals']['remaining_hours'] ?? 0);
+    $sample = $p['totals']['pace_sample'] ?? ['slices' => 0, 'estimated_hours' => 0, 'actual_hours' => 0, 'deviation_hours' => 0];
+    $pace = $p['totals']['pace_factor'] ?? null;
+    $projected = $p['totals']['projected_remaining_hours'] ?? null;
+    $reason = $quedan == 0.0 ? 'sin trabajo pendiente' : 'no hay slices completadas con tiempo medido';
+    $partes = [];
+    $projections = [];
+    foreach (($p['sprints'] ?? []) as $sp) {
+        if (($sp['remaining_hours'] ?? 0) > 0) {
+            $partes[] = 'sprint ' . $sp['sprint'] . ' — ' . $sp['remaining_hours'] . ' h';
+            $projections[] = 'sprint ' . $sp['sprint'] . ' — ' . ($sp['projected_remaining_hours'] ?? '—') . ' h';
+        }
+    }
+    echo 'Queda segun plan: ' . implode(' · ', $partes) . " · total {$quedan} h de IA mas supervision (sin contingencia)\n";
+    if ($pace !== null) {
+        echo "Muestra acumulada: {$sample['slices']} slices medidas; estimado {$sample['estimated_hours']} h → real {$sample['actual_hours']} h (" . sprintf('%+.2f', $sample['deviation_hours']) . ' h, ' . sprintf('%+.1f', ($pace - 1) * 100) . " %; factor {$pace})\n";
+        echo "Proyeccion si continua el ritmo observado (base: {$can['base']}" . ($can['base'] === 'pace' ? ' — trabajo en serie' : '') . '): ' . implode(' · ', $projections) . " · total {$projected} h" . (($sample['slices'] ?? 0) < 10 ? ' (muestra provisional)' : '') . "\n";
+    } else {
+        echo "Muestra acumulada: no disponible — {$reason}\n";
+        echo 'Proyeccion si continua el ritmo observado: ' . ($projected === null ? "no disponible — {$reason}" : "{$projected} h — {$reason}") . "\n";
+    }
+    if (!$escribir) { return; }
+    if (!is_file(SESIONES)) {
+        file_put_contents(SESIONES, "# Sessions — keel-docs-theme\n\n> One row per working session, appended by `scripts/keel-time end`. Times come from the system clock,\n> never from the model. Hours are AI working time plus supervision.\n\n| Start | End | Wall-clock h | Paused h | Planned (slices, est. h) | Done | Est. h | Actual h | Deviation h | Not finished (h spent) | Left after h | Active h | Pace factor | Projected left h | Slice h | Max concurrency | Throughput | Projection basis | Notes |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n");
+    }
+    $notes = array_filter([$sesion['nota'] ?? '', $estimatedDone ? 'estimated — no clock' : '', $pace === null ? $reason : '']);
+    $fila = sprintf("| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n",
+        $ini['at'], $hasta, h($wall), h($m['pausa']),
+        ($planned ? implode(', ', $planned) : '—') . ' (' . ($ini['planned_hours'] ?? 0) . ')',
+        $hechas ? implode(', ', $hechas) : '—', $est, $act, $dev,
+        $noHechas ? implode(', ', $noHechas) : '—', $quedan, $active,
+        $pace === null ? '—' : $pace, $projected === null ? '—' : $projected,
+        $can['slice'], $can['conc'], $can['thr'] === null ? '—' : $can['thr'], $can['base'], implode('; ', $notes));
+    file_put_contents(SESIONES, $fila, FILE_APPEND);
+}
+
+$cmd = $argv[1] ?? 'report';
+$ev = eventos();
+$abierta = sesionAbierta($ev);
+
+switch ($cmd) {
+    case 'start':
+        if ($abierta !== null) {
+            $ultimo = end($abierta['eventos'])['at'];
+            $m = medir($abierta, $ultimo);
+            foreach ($m['abiertos'] as $id) { escribirActual($id, h($m['seg'][$id] ?? 0), 'in-progress'); }
+            anotar(['event' => 'session-end', 'at' => $ultimo, 'session' => $abierta['id'], 'unterminated' => true]);
+            $abierta['nota'] = 'unterminated';
+            ob_start(); informe($abierta, $ultimo, true); ob_end_clean();
+        }
+        $plan = [];
+        $idx = array_search('--plan', $argv, true);
+        if ($idx !== false && isset($argv[$idx + 1])) { $plan = array_filter(array_map('trim', explode(',', $argv[$idx + 1]))); }
+        $horas = 0.0;
+        foreach ($plan as $id) { $horas += (float) (sliceInfo($id)['residual_hours'] ?? 0); }
+        $at = ahora();
+        anotar(['event' => 'session-start', 'at' => $at, 'session' => $at, 'planned' => array_values($plan), 'planned_hours' => $horas]);
+        $p = plan();
+        echo "Inicio de sesion — " . local($at, 'D d M Y, H:i T') . " (reloj del sistema)\n";
+        $partes = [];
+        foreach (($p['sprints'] ?? []) as $sp) {
+            if (($sp['remaining_hours'] ?? 0) > 0) { $partes[] = "sprint {$sp['sprint']} — {$sp['remaining_hours']} h"; }
+        }
+        echo "Queda: " . ($partes ? implode(' · ', $partes) : '—') . " · total " . ($p['totals']['remaining_hours'] ?? 0) . " h\n";
+        echo "Esta sesion planifica:\n";
+        foreach ($plan as $id) { $i = sliceInfo($id); echo "  {$id} " . ($i['title'] ?? '?') . " — " . ($i['residual_hours'] ?? '?') . " h\n"; }
+        echo "  Planificado: {$horas} h de IA mas supervision\n";
+        break;
+    case 'slice-start':
+        if ($abierta === null) { fwrite(STDERR, "keel-time: no hay sesion abierta (scripts/keel-time start)\n"); exit(1); }
+        $id = $argv[2] ?? '';
+        $m = medir($abierta, ahora());
+        foreach ($m['abiertos'] as $otra) {
+            if ($otra !== $id) { anotar(['event' => 'slice-end', 'at' => ahora(), 'session' => $abierta['id'], 'slice' => $otra, 'status' => 'in-progress']); }
+        }
+        anotar(['event' => 'slice-start', 'at' => ahora(), 'session' => $abierta['id'], 'slice' => $id]);
+        echo "slice {$id} abierta a las " . date('H:i') . "\n";
+        break;
+    case 'slice-record':
+        // Keel v7.3.1: el intervalo de una slice que construyo un worker lo registra el coordinador al integrar, con el
+        // inicio/fin/pausas del propio worker. Lo anota `scripts/keel-clock` (idempotente por intento) y aqui se escribe
+        // `actual_hours` igual que en `slice-end`. Con `Parallel development: off` no hay workers: queda por contrato.
+        $id = $argv[2] ?? '';
+        $ri = array_search('--result', $argv, true);
+        $si = array_search('--status', $argv, true);
+        $res = $ri !== false ? ($argv[$ri + 1] ?? '') : '';
+        $st = $si !== false ? ($argv[$si + 1] ?? '') : '';
+        if ($abierta === null || $id === '' || !is_file($res) || !in_array($st, ['done', 'in-progress', 'blocked'], true)) {
+            fwrite(STDERR, "keel-time: uso slice-record <id> --result <worker-result.json> --status done|in-progress|blocked (con sesion abierta)\n"); exit(1);
+        }
+        $out = []; $rc = 1;
+        exec('python3 scripts/keel-clock record-worker ' . escapeshellarg($id) . ' --log ' . escapeshellarg(LOG) . ' --result ' . escapeshellarg($res)
+            . ' --status ' . escapeshellarg($st) . ' --session ' . escapeshellarg((string) $abierta['id']), $out, $rc);
+        if ($rc !== 0) { fwrite(STDERR, "keel-time: keel-clock record-worker fallo: " . implode(' ', $out) . "\n"); exit(1); }
+        $abierta = sesionAbierta(eventos());
+        $m = medir($abierta, ahora());
+        escribirActual($id, h($m['seg'][$id] ?? 0), $st);
+        echo "slice {$id} registrada desde el worker: " . h($m['seg'][$id] ?? 0) . " h\n";
+        break;
+    case 'slice-end':
+        if ($abierta === null) { fwrite(STDERR, "keel-time: no hay sesion abierta\n"); exit(1); }
+        $id = $argv[2] ?? '';
+        $si = array_search('--status', $argv, true);
+        $st = $si !== false ? ($argv[$si + 1] ?? 'done') : 'done';
+        // Enum cerrado del plan (project-state.md): una slice abierta y dejada sin trabajo vuelve a not-started.
+        if (!in_array($st, ['done', 'in-progress', 'not-started'], true)) { fwrite(STDERR, "keel-time: status invalido (done | in-progress | not-started)\n"); exit(1); }
+        $at = ahora();
+        $m = medir($abierta, $at);
+        anotar(['event' => 'slice-end', 'at' => $at, 'session' => $abierta['id'], 'slice' => $id, 'status' => $st]);
+        $medido = h($m['seg'][$id] ?? 0);
+        escribirActual($id, $medido, $st);
+        $i = sliceInfo($id);
+        echo "slice {$id} → {$st}: estimado original " . ($i['original_hours'] ?? '?') . " h, residual " . ($i['residual_hours'] ?? '?') . " h, medido en esta sesion {$medido} h (acumulado " . ($i['actual_hours'] ?? $medido) . " h)\n";
+        break;
+    case 'pause':
+    case 'resume':
+        if ($abierta === null) { fwrite(STDERR, "keel-time: no hay sesion abierta\n"); exit(1); }
+        $e = ['event' => $cmd, 'at' => ahora(), 'session' => $abierta['id']];
+        if ($cmd === 'pause') { $e['reason'] = implode(' ', array_slice($argv, 2)); }
+        anotar($e);
+        echo "{$cmd} a las " . date('H:i') . "\n";
+        break;
+    case 'end':
+        if ($abierta === null) { fwrite(STDERR, "keel-time: no hay sesion abierta\n"); exit(1); }
+        $at = ahora();
+        $m = medir($abierta, $at);
+        foreach ($m['abiertos'] as $id) {
+            anotar(['event' => 'slice-end', 'at' => $at, 'session' => $abierta['id'], 'slice' => $id, 'status' => 'in-progress']);
+            escribirActual($id, h($m['seg'][$id] ?? 0), 'in-progress');
+        }
+        anotar(['event' => 'session-end', 'at' => $at, 'session' => $abierta['id']]);
+        informe(sesionAbierta(eventos()) ?? ['id' => $abierta['id'], 'eventos' => array_values(array_filter(eventos(), static fn ($e) => ($e['session'] ?? null) === $abierta['id']))], $at, true);
+        break;
+    default:
+        if ($abierta === null) { echo "No hay sesion abierta.\n"; break; }
+        informe($abierta, ahora(), false);
+}

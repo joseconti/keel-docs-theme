@@ -16,7 +16,22 @@
 - Keel portability: lock only
 - Assistant config: none
 - Models: n/a (no agents configured — Assistant config: none)
-- Keel baseline: v5.0.0
+- Keel baseline: v7.3.2 — current mechanical sweep in docs/keel-conformance.md (D-015)
+- Durability: Git remote origin on GitHub (verified this session)
+- Autonomy: automatic for the explicitly approved issue1/v1.0.2 maintenance task (D-015)
+- Notify: coordinating DeCA session; no independent out-of-band recipient authorised
+- Chaining: **supervised** — parent DeCA release coordinator owns continuation and publication
+- Chaining model: n/a (supervised)
+- Chain verified: n/a (supervised)
+- Issue duty: existing issue1 tracking and after-release reply authorised by the current maintenance task
+- Issue sweep interval: 24 h
+- Issue capture: off for this scoped task — no new issues authorised; existing issue1 only (D-015)
+- Test-first policy: pure-logic; reproduced bugs always red before source changes
+- Sprints: on
+- Push test scope: affected
+- Security audit: optional — static offline theme; no money, stored personal data or network service
+- Parallel development: auto; max_workers: max — current runtime serial, one ready issue unit and one exclusive browser
+- CI runs on: n/a (Assistant config: none retained)
 - Website intent: no
 - Client budget: no
 - User guide: n/a — the product IS the guide system; README + demo/ serve as its docs
@@ -36,13 +51,13 @@
 
 ## Current position
 - Phase: 7 done — project in MAINTENANCE (references/maintenance.md)
-- Next action: resume the guided assistive-technology pass on demo/ (V1–V6 VoiceOver; per-item in docs/accessibility.md). Full Keel v5.0.0 conformance in docs/keel-conformance.md. Separately deferred: keel-skill integration (docs/PLAN-KEEL-DOCS-THEME.md §4); v5.0.0 test-automation harness (D-014)
+- Next action: T-001–T-003 complete: reconciled controls, issue1 fix, 74-assertion red/green and exact v1.0.2 package verified. Parent coordinator owns pending T-004 main integration, tag/release and downloaded-asset read-back. Historical VoiceOver and broad harness deferrals remain outside this task.
 
 ## Open items
 - Unresolved user questions: none
 - Open Design Requests: none
 - Unverified external steps/assets: assistive-technology pass on the demo — guided pass IN PROGRESS (started 2026-07-22), per-item results in docs/accessibility.md
-- Forge issues in progress: none
+- Forge issues in progress: #1 responsive header; not closed by this worker
 
 ### Deferred items (consciously postponed work)
 - José Conti brand preset — deferred by user decision to first keel consumption (SPEC/open-questions.md #1) — revisit at first consumer project

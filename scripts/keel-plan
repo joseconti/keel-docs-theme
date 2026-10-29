@@ -1,0 +1,170 @@
+#!/usr/bin/env php
+<?php
+// keel-plan — regenera docs/.keel/plan.json desde docs/sprints/sprint-<N>.md y deferred.md (Keel v7.1.0).
+// plan.json es DERIVADO: nunca se edita a mano. Todo porcentaje se calcula aqui desde las horas.
+// Uso: scripts/keel-plan           -> escribe docs/.keel/plan.json
+//      scripts/keel-plan --check   -> sale 1 si el fichero no coincide con lo que se generaria (lo usa keel-verify)
+//      scripts/keel-plan --stdout  -> genera JSON actual sin escribir (lo usa keel-time report)
+
+declare(strict_types=1);
+
+$raiz = dirname(__DIR__);
+chdir($raiz);
+
+/** Lee el frontmatter keel.sprint/2 de un fichero: cabecera y slices. Formato fijo del proyecto. */
+function leerSprint(string $fichero): array
+{
+    $txt = (string) file_get_contents($fichero);
+    if (!preg_match('/\A---\n(.*?)\n---/s', $txt, $m)) {
+        return ['meta' => [], 'slices' => []];
+    }
+    $meta = [];
+    $slices = [];
+    $actual = null;
+    foreach (explode("\n", $m[1]) as $l) {
+        if (preg_match('/^  - id: (\S+)/', $l, $x)) {
+            if ($actual !== null) { $slices[] = $actual; }
+            $actual = ['id' => $x[1]];
+            continue;
+        }
+        if ($actual !== null && preg_match('/^    ([a-z_]+): (.*)$/', $l, $x)) {
+            $actual[$x[1]] = trim($x[2], " \"");
+            continue;
+        }
+        if (preg_match('/^([a-z_]+): (.*)$/', $l, $x)) {
+            $meta[$x[1]] = trim($x[2], " \"");
+        }
+    }
+    if ($actual !== null) { $slices[] = $actual; }
+    return ['meta' => $meta, 'slices' => $slices];
+}
+
+function num($v): float { return is_numeric($v) ? (float) $v : 0.0; }
+function lista(string $v): array
+{
+    $v = trim($v, '[] ');
+    return $v === '' ? [] : array_map('trim', explode(',', $v));
+}
+
+$ficheros = glob('docs/sprints/sprint-[0-9]*.md') ?: [];
+$ficheros = array_values(array_filter($ficheros, static fn ($f) => preg_match('~sprint-\d+\.md$~', $f)));
+natsort($ficheros);
+
+$sprints = [];
+$tot = ['original_estimated_hours' => 0.0, 'completed_original_hours' => 0.0, 'actual_hours' => 0.0, 'remaining_hours' => 0.0, 'slices' => 0];
+$eligibleHours = $eligibleActual = 0.0;
+$eligibleSlices = 0;
+$openOwnership = [];
+$openWithoutOwnership = [];
+$openScopeByKind = ['added' => 0.0, 'extracted' => 0.0, 're-estimated' => 0.0];
+foreach ($ficheros as $f) {
+    $s = leerSprint($f);
+    $e = $d = $a = $r = 0.0;
+    $items = [];
+    foreach ($s['slices'] as $sl) {
+        $st = $sl['status'] ?? 'not-started';
+        $original = num($sl['original_hours'] ?? 0);
+        $residual = num($sl['residual_hours'] ?? 0);
+        $items[] = [
+            'id' => $sl['id'], 'title' => $sl['title'] ?? '', 'status' => $st,
+            'original_hours' => $original, 'residual_hours' => $residual,
+            'change_kind' => $sl['change_kind'] ?? null, 'parent_slice' => $sl['parent_slice'] ?? null,
+            'owns' => lista($sl['owns'] ?? ''),
+            'actual_hours' => isset($sl['actual_hours']) ? num($sl['actual_hours']) : null,
+            'actual_source' => $sl['actual_source'] ?? null,
+            'depends_on' => lista($sl['depends_on'] ?? ''),
+        ];
+        if ($st === 'dropped') { continue; }
+        $e += $original;
+        if ($st === 'done') {
+            $d += $original;
+            $a += num($sl['actual_hours'] ?? 0);
+            if (($sl['actual_source'] ?? '') === 'measured' && $original > 0 && isset($sl['actual_hours'])
+                && is_numeric($sl['actual_hours']) && (float) $sl['actual_hours'] >= 0) {
+                $eligibleHours += $original;
+                $eligibleActual += (float) $sl['actual_hours'];
+                $eligibleSlices++;
+            }
+        } else {
+            $r += $residual;
+            $kind = $sl['change_kind'] ?? '';
+            if (array_key_exists($kind, $openScopeByKind)) { $openScopeByKind[$kind] += $residual; }
+            $owns = lista($sl['owns'] ?? '');
+            if ($owns === []) {
+                $openWithoutOwnership[] = $sl['id'];
+            }
+            foreach ($owns as $requirement) {
+                $openOwnership[$requirement][] = $sl['id'];
+            }
+        }
+    }
+    $sprints[] = [
+        'sprint' => (int) ($s['meta']['sprint'] ?? 0), 'file' => $f, 'goal' => $s['meta']['goal'] ?? '',
+        'status' => $s['meta']['status'] ?? 'not-started', 'slices' => $items,
+        'original_estimated_hours' => round($e, 2), 'completed_original_hours' => round($d, 2), 'actual_hours' => round($a, 2),
+        'remaining_hours' => round($r, 2), 'deviation_hours' => round($a - $d, 2),
+        'percent_done' => $e > 0 ? round(100 * $d / $e, 1) : null,
+    ];
+    $tot['original_estimated_hours'] += $e; $tot['completed_original_hours'] += $d; $tot['actual_hours'] += $a; $tot['remaining_hours'] += $r;
+    $tot['slices'] += count($items);
+}
+
+$duplicateOwnership = array_keys(array_filter($openOwnership, static fn (array $ids): bool => count($ids) > 1));
+$reconciliationStatus = ($openWithoutOwnership === [] && $duplicateOwnership === []) ? 'reconciled' : 'unreconciled';
+$scopeDelta = [
+    'status' => $reconciliationStatus,
+    'added_scope' => round($openScopeByKind['added'], 2),
+    'extracted_scope' => round($openScopeByKind['extracted'], 2),
+    'explicit_residual_reestimates' => round($openScopeByKind['re-estimated'], 2),
+    'open_slices_without_exclusive_ownership' => $openWithoutOwnership,
+    'duplicate_open_requirements' => $duplicateOwnership,
+    'basis' => 'Current residual scope by recorded change_kind; historic closed-slice scope is not reconstructed.',
+    'note' => $reconciliationStatus === 'reconciled'
+        ? 'Every open slice declares an explicit residual estimate and exclusive requirement ownership.'
+        : 'The balance remains unreconciled until every open slice has exclusive ownership.',
+];
+
+$pace = $eligibleHours > 0 ? $eligibleActual / $eligibleHours : null;
+foreach ($sprints as &$sprint) {
+    $left = $sprint['remaining_hours'];
+    $sprint['pace_factor'] = $pace === null ? null : round($pace, 6);
+    $sprint['projected_remaining_hours'] = $left === 0.0 ? 0.0 : ($pace === null ? null : round($left * $pace, 2));
+}
+unset($sprint);
+
+$def = leerSprint('docs/sprints/deferred.md');
+$defIds = array_map(static fn ($x) => $x['id'], $def['slices']);
+$defHoras = array_sum(array_map(static fn ($x) => ($x['status'] ?? '') === 'dropped' ? 0.0 : num($x['original_hours'] ?? 0), $def['slices']));
+$dropped = array_values(array_map(static fn ($x) => $x['id'], array_filter($def['slices'], static fn ($x) => ($x['status'] ?? '') === 'dropped')));
+
+$plan = [
+    'schema' => 'keel.plan/2',
+    'generator' => 'scripts/keel-plan',
+    'unit' => 'AI working time + supervision (never human-team time)',
+    'note' => 'Fichero DERIVADO de docs/sprints/sprint-<N>.md y deferred.md. Nunca se edita a mano: se regenera con scripts/keel-plan. Los estimados originales, el alcance residual y el tiempo real son hechos distintos; contingencia y deferred excluidos.',
+    'reconciliation_status' => $reconciliationStatus,
+    'scope_delta' => $scopeDelta,
+    'sprints' => $sprints,
+    'totals' => [
+        'slices' => $tot['slices'],
+        'original_estimated_hours' => round($tot['original_estimated_hours'], 2),
+        'completed_original_hours' => round($tot['completed_original_hours'], 2),
+        'actual_hours' => round($tot['actual_hours'], 2),
+        'remaining_hours' => round($tot['remaining_hours'], 2),
+        'deviation_hours' => round($tot['actual_hours'] - $tot['completed_original_hours'], 2),
+        'pace_factor' => $pace === null ? null : round($pace, 6),
+        'projected_remaining_hours' => $tot['remaining_hours'] === 0.0 ? 0.0 : ($pace === null ? null : round($tot['remaining_hours'] * $pace, 2)),
+        'pace_sample' => ['slices' => $eligibleSlices, 'estimated_hours' => round($eligibleHours, 2), 'actual_hours' => round($eligibleActual, 2), 'deviation_hours' => round($eligibleActual - $eligibleHours, 2)],
+        'percent_done' => $tot['original_estimated_hours'] > 0 ? round(100 * $tot['completed_original_hours'] / $tot['original_estimated_hours'], 1) : null,
+    ],
+    'deferred' => ['items' => count($defIds), 'hours' => round($defHoras, 2), 'ids' => $defIds, 'dropped' => $dropped],
+];
+$json = json_encode($plan, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . "\n";
+
+if (in_array('--stdout', $argv, true)) { echo $json; exit(0); }
+if (in_array('--check', $argv, true)) {
+    $actual = is_file('docs/.keel/plan.json') ? (string) file_get_contents('docs/.keel/plan.json') : '';
+    exit($actual === $json ? 0 : 1);
+}
+file_put_contents('docs/.keel/plan.json', $json);
+echo "plan.json regenerado: {$tot['slices']} slices, " . round($tot['remaining_hours'], 2) . " h pendientes (IA + supervision)\n";

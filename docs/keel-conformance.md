@@ -122,3 +122,152 @@ into the deferred test-automation harness; one orphan (row 12) fixed this sessio
   disproportionate for a no-build static theme validated by demo/ + verify-contrast.py + the
   guided AT pass. Revisit if the theme gains runtime behavior.
 - **Baseline advanced to v5.0.0.**
+
+## Current mechanical sweep — v7.3.2 (2026-10-29, D-015)
+
+The earlier v5 report above is historical. Every current Table 1 row is reviewed below; current scope is static-theme maintenance, not a new product phase. `docs/sessions.md` is produced by the measured close of this session. No Gemini, embed, native assistant settings, CI, launcher, site or inbound tunnel is selected. Stop-hook script exists; registration is not applicable to this Codex session because its output contract is unconfirmed. Public fixture browser tests are a scoped issue regression, not a claim that the deferred historical harness is complete.
+
+| Requirement | State | Evidence / condition |
+|---|---|---|
+| `docs/PROGRESS.md` | present | docs/PROGRESS.md |
+| `docs/decisions.md` | present | docs/decisions.md |
+| `docs/lessons-learned.md` | present | docs/lessons-learned.md |
+| `docs/sessions.md` | present | Measured session close writes the record before final commit |
+| `scripts/keel-time` | present | scripts/keel-time |
+| `scripts/keel-clock` | present | scripts/keel-clock |
+| `docs/.keel/clock.jsonl` | present | docs/.keel/clock.jsonl |
+| Off-machine durability — a Git remote, or a tree that replicates off this computer | present | origin HTTPS remote verified; isolated branch pushed at block close |
+| A clean working tree at every block close | present | verified at block close, develop-bound isolated branch |
+| `CLAUDE.md` + `AGENTS.md` (repo root) | present | CLAUDE.md, AGENTS.md |
+| `GEMINI.md` or `context.fileName` in `.gemini/settings.json` | n/a | Only if the user works with Gemini CLI |
+| `.claude/skills/keel/` + `.agents/skills/keel/` | n/a | Only if embed accepted (card: `Keel portability:`) |
+| `docs/00-competitive-landscape.md` | declined | D-011 consolidated documentation / D-014 historical harness deferral preserved |
+| `docs/01-discovery.md` | declined | D-011 consolidated documentation / D-014 historical harness deferral preserved |
+| `docs/estimate.md` | present | docs/estimate.md |
+| `docs/token-ledger.md` | present | docs/token-ledger.md |
+| `docs/02-functional-spec.md` | declined | D-011 consolidated documentation / D-014 historical harness deferral preserved |
+| `docs/03-technical-plan.md` | declined | D-011 consolidated documentation / D-014 historical harness deferral preserved |
+| `docs/threat-model.md` | present | docs/threat-model.md |
+| `docs/flows/` | n/a | Static offline component, no branching journey; demo navigation is the reference (D-011) |
+| `docs/budget.md` | n/a | Only if `Client budget: yes` (card line, asked at Phase 1 step 10) |
+| `docs/spec-references/` | n/a | Only if the spec records any (`## Reference artifacts`) |
+| `docs/rubrics/` | present | docs/rubrics/ |
+| `docs/design/references/` | n/a | Only if the user holds any |
+| Assistant rules — one container per accepted tool (`.claude/rules/`, `.cursor/rules/`, `.github/instructions/`, `.windsurf/rules/`, nested context files for Codex/Gemini) | n/a | Only if accepted (card: `Assistant config:`) |
+| Assistant subagents — per capable tool (`.claude/agents/`, `.github/agents/`, `.cursor/agents/`, `.gemini/agents/`) | n/a | Only if accepted (card: `Assistant config:`) |
+| `docs/design/DESIGN-BRIEF.md` | present | docs/design/DESIGN-BRIEF.md |
+| `docs/design/design-handoff/` | present | docs/design/design-handoff/ |
+| `docs/BUILD-SPEC.md` | present | docs/BUILD-SPEC.md |
+| `docs/design/design-requests/` | n/a | When the first Design Request appears |
+| `.gitignore` + `.gitattributes` | present / n/a | Ignore present; package.sh copies only theme/, no git archive/export-ignore needed (D-014) |
+| `docs/sprints/` | present | docs/sprints/ |
+| `docs/sprints/deferred.md` | present | docs/sprints/deferred.md |
+| `docs/.keel/plan.json` | present | docs/.keel/plan.json |
+| `scripts/keel-parallel` | present | scripts/keel-parallel |
+| `docs/.keel/parallel/` | n/a | Ignored before use; no parallel writer registered in this repo |
+| `docs/.keel/slices/<run-id>/<slice-id>/<attempt-id>.json` | n/a | Only when a parallel writing worker runs |
+| `docs/05-test-points.md` | declined | D-011 consolidated documentation / D-014 historical harness deferral preserved |
+| `docs/api/INDEX.md` | present | docs/api/INDEX.md |
+| `docs/keel-conformance.md` | present | docs/keel-conformance.md |
+| `docs/playground.md` | present | docs/playground.md |
+| `scripts/keel-verify` | present | scripts/keel-verify |
+| `scripts/playground-tunnel` | n/a | Only if an external system calls the project (payment notifications, webhooks, a URL a third party fetches, a remote client connecting to a local server) |
+| `scripts/keel-affected-tests` | present | scripts/keel-affected-tests |
+| `.githooks/pre-push` + `core.hooksPath` set | present | .githooks/pre-push |
+| `scripts/keel-doctor` | deferred | D-014 historical environment automation; current runtime preflight is documented in BUILD-SPEC |
+| `scripts/` build/minify script (name per the technical plan) | n/a | Readable source ships by recorded D-012 exception; package.sh stamps only |
+| `scripts/keel-handoff-verify` | present | scripts/keel-handoff-verify |
+| Single-lane lock — taken by `scripts/keel-handoff-verify` when the card is `Chaining: start` | n/a | Supervised chaining |
+| `scripts/keel-tools/<tool>.sh` — one row file per accepted assistant | n/a | Only if the card is not `Chaining: off` and not `Chaining: supervised` |
+| `scripts/keel-continue` | n/a | Only if the card is not `Chaining: off` and not `Chaining: supervised` |
+| `scripts/keel-close` | present | scripts/keel-close |
+| `.githooks/post-commit` + `core.hooksPath` set | present | .githooks/post-commit |
+| `scripts/keel-stop-hook` + its `Stop` hook registration | present / n/a | Script exists; registration unsupported by confirmed Codex contract, not installed |
+| `scripts/keel-session-pid.sh` | present | scripts/keel-session-pid.sh |
+| `scripts/keel-chain-check` | n/a | Only if the card is not `Chaining: off` and not `Chaining: supervised` |
+| `Chaining model:` line on the project card | n/a | Only if the card is not `Chaining: off` and not `Chaining: supervised` |
+| `Chain verified:` line on the project card | n/a | Only if the card is not `Chaining: off` and not `Chaining: supervised` |
+| `.githooks/pre-commit` | n/a | Only if accepted (card: `Assistant config:`) |
+| Permission allow-lists — per capable tool (`.claude/settings.json`, `.codex/rules/`, `tools.allowed` in `.gemini/settings.json`, `.cursor/cli.json`) | n/a | Only if accepted (card: `Assistant config:`) |
+| CI workflow (e.g. `.github/workflows/ci.yml`) | n/a | Only if accepted (card: `Assistant config:`) and the forge has CI |
+| MCP registration — per capable tool (`.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`, `[mcp_servers]` in `.codex/config.toml`, `mcpServers` in `.gemini/settings.json`) | n/a | Only if the technical plan defines dev MCP servers |
+| `docs/architecture.md` | present | docs/architecture.md |
+| `docs/api/`, `docs/usage/`, `docs/reference/` | present / declined | api present; usage/reference consolidated by D-011 |
+| `docs/security.md` | present | docs/security.md |
+| `docs/accessibility.md` | present | docs/accessibility.md |
+| `README.md` (repo root) | present | README.md |
+| `guide/` (repo root) | n/a | Theme itself is the guide product; README + demo (card) |
+| `guide/_theme/` + `guide/brand/` + per-page `<meta name="keel-docs-theme">` | n/a | This is the producer, no consumer guide vendoring |
+| `docs/07-release.md` | present | docs/07-release.md |
+| `docs/security-audit.md` | n/a | Card `Security audit: required` — or any project on which an audit has run |
+| `docs/security-audit/` listed in `.gitignore` | n/a | No active audit run, card optional |
+| `<site-docs>/` (`docs/site/` or the site's own repo, per the recorded decision) | n/a | Website intent only |
+| `<site-docs>/design/design-handoff/SPEC/art-direction.md` | n/a | Website intent only (since v5.12.0) |
+| `~/.keel/art-ledger.md` | n/a | Website intent only (since v5.12.0) |
+| `<site-docs>/launch-report.md` | n/a | Website intent only |
+| `<site-docs>/operations.md` | n/a | Website intent only |
+| `docs/.keel/e2e-status.json` | n/a | Only if the project card carries an `E2E:` line |
+| `docs/.keel/e2e-history.jsonl` | n/a | Optional even where `E2E:` exists; every reader copes with its absence |
+| `docs/issues.md` | present | docs/issues.md |
+| `docs/old/` | n/a | When archiving starts |
+| `docs/04-adoption-audit.md` | n/a | Adopted projects only |
+| `env.CLAUDE_CODE_EXPERIMENTAL_AGENTS_TEAMS: "1"` in `.claude/settings.local.json` (machine-local, gitignored) | n/a | Whenever Claude Code is in use (running session or accepted tool) |
+| `Parallel development: auto; max_workers: max` on the card | present | canonical scripts/keel-parallel; serial dependency set; no worker run in this repo |
+
+### Per-version delta sweep
+
+Each version row was checked against current manifest, using the row-specific conditions and the preserved D-011/D-014 deferrals.
+
+| Version | State | Disposition |
+|---|---|---|
+| v5.0.0 | Reviewed | D-014 remains authoritative for historical discovery/AC harness; current scoped real browser run and static runtime checks now added. No retrospective reconstruction. |
+| v5.1.0 | Reviewed | Historical full Playwright harness remains deferred D-014; current Puppeteer issue regression records durable machine-readable red/green results. No false trace/video claim. |
+| v5.2.0 | Reviewed | Reading review delegated to parent; single executing browser conductor. No independent executing verifier can share browser. |
+| v5.3.0 | Reviewed | Ignored current handoff, verifier and scoped close added; chaining explicitly supervised by parent, no launch/model needed. |
+| v5.3.1 | Reviewed | Handoff verifier installed; launcher n/a supervised. |
+| v5.3.2 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.3.3 | Reviewed | Current manifest is the source of this sweep, earlier conformance retained only as historical record. |
+| v5.4.0 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.4.1 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.5.0 | Reviewed | Scoped automatic maintenance authorised by owner; notify parent; supervised chaining; existing issue tracking only. No native tool settings inferred. |
+| v5.5.1 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.5.2 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.6.0 | Reviewed | Origin remote verified and card durability recorded; current branch pushed before block close. |
+| v5.7.0 | Reviewed | Fresh handoff written at candidate close, parent retains publication task. |
+| v5.8.0 | Reviewed | Existing issue1 ledger created; no new issue capture authorised. |
+| v5.8.1 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.9.0 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.10.0 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.10.1 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.10.2 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.10.3 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.11.0 | Reviewed | Test-first card added; public fixture failed on original source before patch and passes identical assertions after. |
+| v5.12.0 | Reviewed | No website intent, site art-direction/ledger requirements not applicable. |
+| v5.13.0 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.14.0 | Reviewed | Scoped close helper and active post-commit stale-handoff deletion installed. |
+| v5.15.0 | Reviewed | Stop helper installed; unconfirmed Codex Stop contract means no registration. |
+| v5.15.1 | Reviewed | Single session identity helper installed; no shared-checkout writers. |
+| v5.15.2 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.16.0 | Reviewed | Assistant config:none retained; no CI generated, card states n/a. |
+| v5.17.0 | Reviewed | Schema sprint ledger and generated plan added; no E2E badge claim. |
+| v5.18.0 | Reviewed | No tool registry or launcher under supervised chaining; no guessed Codex hook schema. |
+| v5.19.0 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.19.1 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.19.2 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.20.0 | Reviewed | Behavioural launcher/close correction reviewed: supervised chaining has no launch action. Scoped close/stop/handoff helpers copied from current implementation; no native settings registered. |
+| v5.21.0 | Reviewed | All new work planned in T001–T004 before implementation; measured actuals and residuals maintained. |
+| v6.0.0 | Reviewed | Measured time/clock, sessions, plan and pre-push affected-test selector added. Full theme gate run on candidate. |
+| v6.1.0 | Reviewed | Supervised chaining; registry/continue/model/allow-list conditions not met. |
+| v6.2.0 | Reviewed | No configured Codex launcher accepted; no native settings modified. |
+| v6.3.0 | Reviewed | Optional static-library audit posture recorded; no active audit or money/PII/service surface. |
+| v6.4.0 | Reviewed | Canonical measured clock feeds session report, actual hours and residual balance. |
+| v6.5.0 | Reviewed | One Puppeteer browser per regression, serial, finally closes; external existing deps only. Historical full doctor remains D014. |
+| v6.6.0 | Reviewed | New slices have immutable original_hours, explicit residual_hours, ownership and added provenance. No legacy slice decomposition exists. |
+| v7.0.0 | Reviewed | Canonical parallel helper installed; dependency set is linear, sole browser exclusive; execution serial, no writing worker assignment created. |
+| v7.1.0 | Reviewed | Node syntax and Python contrast actually ran with zero findings; no unavailable analyzer mislabeled pass. |
+| v7.2.0 | Reviewed | No inbound calls; file:// local demo driven live with real CSS/JS. No tunnel needed. |
+| v7.3.0 | Reviewed | Current sweep executed; auto/max card; no Claude Code accepted/configured, teams setting n/a. Active dependency set remains serial. |
+| v7.3.1 | Reviewed | Clock helper copied byte-identically; elapsed and summed slice hours reported independently at close. |
+| v7.3.2 | Reviewed | Parallel helper byte-identical current canonical. No worker batch exists; all current verification serial at candidate gate. |
+
+Standing checks: lock-only portability retained; canonical clock/parallel helpers checksum compared; supervised chaining means no launcher or model selected; Claude teams not applicable; scoped owner authority supplies automatic maintenance, not a permanent preference for unrelated work; no registered worker in this repository, effective serial execution. Existing source remains readable under D-012.

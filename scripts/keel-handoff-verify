@@ -1,0 +1,245 @@
+#!/usr/bin/env bash
+# keel-handoff-verify — los cinco chequeos mecánicos del traspaso de sesión, y el CERROJO DE
+# CARRIL ÚNICO cuando la ficha dice `Chaining: start` (Keel v5.5.2).
+#
+# POR QUÉ ESTE FICHERO EXISTE, y no es una preferencia de estilo: una sesión que compone estos
+# chequeos a mano escribe una línea de `$(...)` anidados, el comparador de permisos no la puede
+# descomponer, devuelve `Parse error`, y la lista de permisos del proyecto se SALTA entera —
+# aunque cada comando de git que hay dentro esté permitido. Con el script hay una sola entrada:
+#
+#     "Bash(./scripts/keel-handoff-verify:*)"
+#
+# Uso:  ./scripts/keel-handoff-verify [ruta del traspaso]
+#       (por defecto, `docs/continuation-prompt.md` en la raíz del repositorio)
+#       ./scripts/keel-handoff-verify --release      (suelta el carril de esta sesión y sale)
+#
+# Salida: una línea por chequeo y un VERDICT final: CONTINUE o STOP.
+# Un fichero AUSENTE no es un error: significa «reanuda normal desde docs/PROGRESS.md».
+#
+# EL CARRIL ÚNICO, y por qué lo toma ESTE script y no el que lanza: un lanzador no puede saber
+# quién más va en vuelo — eso es justo lo que falló el 30/07/2026, cuando un encadenado abrió
+# CUATRO ventanas sobre este mismo árbol de git. La sesión que LLEGA es la única que puede
+# cerrar la ventana entre lanzar y trabajar, y este script es lo primero que ejecuta, así que
+# no queda hueco entre verificar y empezar. Sobre una ficha que no sea `Chaining: start`
+# corre los cinco chequeos y no toma nada.
+
+set -uo pipefail
+
+RAIZ=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "STOP: esto no es un repositorio git."; exit 1; }
+REAL_RAIZ=$(cd "$RAIZ" && pwd -P)
+
+# --- El carril vive FUERA del repositorio -------------------------------------------------------
+# Un cerrojo dentro del árbol es un freno que la propia cadena puede borrar: un `git clean`, un
+# checkout o un clon nuevo lo resetean, y lo que modifica el freno es justo lo que el freno frena.
+# La clave es la RUTA REAL del árbol, no el commit raíz: en un clon superficial ese hash no es la
+# raíz y CAMBIA con `--unshallow`, así que el cerrojo de una sesión viva se volvería invisible.
+DIR_ESTADO="${XDG_STATE_HOME:-$HOME/.local/state}/keel"
+CLAVE=$(printf '%s' "$REAL_RAIZ" | shasum | cut -c1-16)
+CARRIL="$DIR_ESTADO/lane-$CLAVE"
+
+# El dueño del carril es la SESIÓN del asistente, no este script, que muere en cuanto termina.
+#
+# Keel v5.15.1: la derivación de identidad ya NO vive aquí. Vive en `scripts/keel-session-pid.sh`,
+# que se sourcea. Un ayudante que nadie nombra es un ayudante que cada llamante redefine un poco
+# distinto, y tres respuestas ligeramente distintas a «quién soy» son el fallo que eso cierra.
+# Se conservan los nombres locales para no tocar el resto del script, y se sigue comparando por PID
+# SUELTO donde ya se comparaba: los ficheros de carril y de recibo ya escritos guardan el número.
+. "$(dirname "$0")/keel-session-pid.sh"
+sesion_pid() { keel_session_pid_solo; }
+arranque_de() { keel_session_arranque "$1"; }
+
+if [ "${1:-}" = "--release" ]; then
+  MI_PID=$(sesion_pid)
+  if [ -f "$CARRIL" ] && [ "$(sed -n 1p "$CARRIL" 2>/dev/null)" = "$MI_PID" ]; then
+    rm -f "$CARRIL"; echo "carril       : SUELTO      (PID $MI_PID)"
+  else
+    echo "carril       : nada que soltar (no lo tenía esta sesión)"
+  fi
+  exit 0
+fi
+
+# --- `--no-lane`: verificar SIN reclamar el carril -----------------------------------------------
+# Existe por un fallo concreto que cazó el gate de revisión, y merece quedar escrito porque la
+# lectura ingenua es justo la contraria: `scripts/keel-continue` ejecuta este script para verificar
+# ANTES de disparar, y si esa ejecución reclamara el carril, lo tomaría la sesión que LANZA. Cuando
+# la sesión LANZADA llegara y corriera su propia verificación, encontraría el carril ocupado por la
+# que acaba de cerrarse y se pararía: el encadenado se autobloquearía SIEMPRE. El contrato lo dice
+# con todas las letras —«el cerrojo lo toma la sesión que LLEGA», «`keel-continue` nunca lo toma»—,
+# y sin esta bandera el código decía lo contrario de lo que la documentación afirmaba.
+SIN_CARRIL=0
+if [ "${1:-}" = "--no-lane" ]; then SIN_CARRIL=1; shift; fi
+
+TRASPASO="${1:-$RAIZ/docs/continuation-prompt.md}"
+
+if [ ! -f "$TRASPASO" ]; then
+  echo "handoff      : AUSENTE ($TRASPASO)"
+  echo "VERDICT: CONTINUE   (sin traspaso: se reanuda desde docs/PROGRESS.md, que es lo normal)"
+  exit 0
+fi
+
+cabecera() { sed -n '1,/^---$/p' "$TRASPASO" | grep -m1 "^$1:" | sed "s/^$1:[[:space:]]*//"; }
+
+PARAR=0
+falla() { echo "$1"; PARAR=1; }
+
+# --- 1. CONTENCIÓN, y va PRIMERA -------------------------------------------------------------
+# Es el único chequeo que separa el caso peor: dos checkouts del MISMO repositorio —un worktree,
+# un segundo clon, una carpeta copiada— comparten commit raíz y HEAD, así que `Repo` y `Commit`
+# pasan los dos mientras se trabaja en el directorio equivocado. Y el nombre del fichero es
+# idéntico en todos los proyectos Keel.
+REAL_TRASPASO=$(cd "$(dirname "$TRASPASO")" && pwd -P)/$(basename "$TRASPASO")
+REAL_RAIZ=$(cd "$RAIZ" && pwd -P)
+case "$REAL_TRASPASO" in
+  "$REAL_RAIZ"/*) echo "contencion   : OK          (el traspaso vive dentro de $REAL_RAIZ)" ;;
+  *)              falla "contencion   : FALLA       (el traspaso está en $REAL_TRASPASO, FUERA de $REAL_RAIZ)" ;;
+esac
+
+# --- 2. Repo: identidad del repositorio -------------------------------------------------------
+REPO_CAB=$(cabecera Repo)
+if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+  # Un clon superficial devuelve el commit injertado, no la raíz, con salida 0 — y el valor CAMBIA
+  # tras `git fetch --unshallow`. Ni pasa ni falla: la identidad es inverificable y lo carga la
+  # contención.
+  echo "repo         : INVERIFICABLE (clon superficial; manda la contención)"
+elif [ -z "$REPO_CAB" ]; then
+  falla "repo         : FALLA       (la cabecera no trae Repo)"
+elif [ "$REPO_CAB" = "unavailable (shallow)" ]; then
+  echo "repo         : INVERIFICABLE (el traspaso se escribió en un clon superficial)"
+else
+  # Un repositorio puede tener MÁS DE UNA raíz (historias no relacionadas fusionadas) y entonces
+  # el comando imprime varias líneas: `sort | head -1` elige una de forma estable.
+  RAIZ_REAL=$(git rev-list --max-parents=0 HEAD 2>/dev/null | sort | head -1)
+  if [ "${RAIZ_REAL:0:${#REPO_CAB}}" = "$REPO_CAB" ]; then
+    echo "repo         : OK          ($REPO_CAB)"
+  else
+    falla "repo         : FALLA       (el traspaso es de $REPO_CAB; este repositorio es ${RAIZ_REAL:0:7})"
+  fi
+fi
+
+# --- 3. Commit ---------------------------------------------------------------------------------
+COMMIT_CAB=$(cabecera Commit)
+HEAD_REAL=$(git rev-parse HEAD 2>/dev/null)
+if [ -z "$COMMIT_CAB" ]; then
+  falla "commit       : FALLA       (la cabecera no trae Commit)"
+elif [ "${HEAD_REAL:0:${#COMMIT_CAB}}" = "$COMMIT_CAB" ]; then
+  echo "commit       : OK          ($COMMIT_CAB)"
+elif git merge-base --is-ancestor "$COMMIT_CAB" HEAD 2>/dev/null; then
+  # Cuánto se ha movido el repositorio dice más que un sí/no.
+  N=$(git rev-list --count "$COMMIT_CAB..HEAD" 2>/dev/null)
+  falla "commit       : FALLA       (el traspaso es de $COMMIT_CAB; HEAD va $N commits por delante)"
+else
+  falla "commit       : FALLA       (el traspaso es de $COMMIT_CAB, que no es ancestro de HEAD)"
+fi
+
+# --- 4. Generated: contra el reloj Y contra el mtime del propio fichero ------------------------
+# Ambos lados se normalizan a EPOCH antes de comparar. La cabecera escribe `+02:00` y `stat`
+# informa `+0200`: comparados como cadenas, el mismo instante sale distinto y el script gritaría
+# manipulación en cada ejecución. El mtime no lo puede falsear la cabecera.
+GEN_CAB=$(cabecera Generated)
+epoch() { date -j -f "%Y-%m-%dT%H:%M:%S%z" "$(echo "$1" | sed 's/\([+-][0-9][0-9]\):\([0-9][0-9]\)$/\1\2/')" +%s 2>/dev/null \
+       || date -d "$1" +%s 2>/dev/null; }
+GEN_EPOCH=$(epoch "$GEN_CAB")
+MTIME=$(stat -f %m "$TRASPASO" 2>/dev/null || stat -c %Y "$TRASPASO" 2>/dev/null)
+AHORA=$(date +%s)
+if [ -z "$GEN_EPOCH" ]; then
+  falla "generated    : FALLA       (cabecera Generated ausente o ilegible: '$GEN_CAB')"
+else
+  EDAD=$(( (AHORA - GEN_EPOCH) / 3600 ))
+  DESFASE=$(( GEN_EPOCH > MTIME ? GEN_EPOCH - MTIME : MTIME - GEN_EPOCH ))
+  if [ "$DESFASE" -gt 300 ]; then
+    falla "generated    : FALLA       (la cabecera dice $GEN_CAB pero el fichero se modificó a otra hora: $DESFASE s de desfase)"
+  elif [ "$EDAD" -gt 24 ]; then
+    falla "generated    : FALLA       (el traspaso tiene $EDAD h; el repositorio ha podido moverse)"
+  else
+    echo "generated    : OK          (hace $EDAD h, y el mtime del fichero concuerda)"
+  fi
+fi
+
+# --- 5. Tree ------------------------------------------------------------------------------------
+# `Commit:` no dice NADA de lo que hay sin commitear, y la sesión que escribe un traspaso
+# quedándose sin contexto es justo la que puede dejar trabajo suelto.
+TREE_CAB=$(cabecera Tree)
+SUCIOS=$(git status --porcelain 2>/dev/null | grep -c . || true)
+if [ "$SUCIOS" -eq 0 ]; then TREE_REAL="clean"; else TREE_REAL="dirty ($SUCIOS files)"; fi
+if [ "$TREE_CAB" = "$TREE_REAL" ]; then
+  echo "tree         : OK          ($TREE_REAL)"
+else
+  falla "tree         : FALLA       (el traspaso dice '$TREE_CAB'; el árbol está '$TREE_REAL')"
+fi
+
+# `Position:` NO se comprueba a propósito: es prosa contra prosa, no es ejecutable, y un chequeo
+# que no se puede correr es una promesa. Se imprime para que lo lea una persona.
+echo "position     : (informativo) $(cabecera Position)"
+echo "handover     : $(cabecera Handover)"
+
+echo
+if [ $PARAR -eq 1 ]; then
+  echo "VERDICT: STOP   (un traspaso viejo o ajeno es más peligroso que no tener ninguno: se lee"
+  echo "                como una instrucción y en realidad es un recuerdo. Reanuda desde docs/PROGRESS.md.)"
+  exit 1
+fi
+
+# --- 6. EL CARRIL ÚNICO, y solo si la ficha dice `Chaining: start` ------------------------------
+# Los chequeos 1–5 miran el traspaso; este mira quién más está trabajando en este árbol. Se toma
+# aquí, con el verdicto ya en CONTINUE, porque tomarlo antes reservaría el carril para una sesión
+# que se va a parar de todas formas.
+FICHA=$(grep -m1 '^- Chaining:' "$RAIZ/docs/PROGRESS.md" 2>/dev/null)
+[ "$SIN_CARRIL" -eq 1 ] && FICHA="(--no-lane: se verifica sin reclamar el carril)"
+case "$FICHA" in
+  *start*)
+    mkdir -p "$DIR_ESTADO" 2>/dev/null
+    MI_PID=$(sesion_pid); MI_ARRANQUE=$(arranque_de "$MI_PID")
+    # Identidad del recibo de ESTE traspaso: la MISMA formula que usa `scripts/keel-continue`
+    # (`Generated:` + `Commit:`), que es justo lo que permite reconocer al propio lanzador sin
+    # acordar nada con el. Sin recibo, queda vacia y el testigo de abajo no se aplica.
+    ID_RECIBO=$(printf '%s|%s' "$GEN_CAB" "$COMMIT_CAB" | shasum | cut -c1-16)
+    PID_LANZADOR=$(sed -n 1p "$DIR_ESTADO/receipt-$CLAVE-$ID_RECIBO/launcher-pid" 2>/dev/null || true)
+    if [ -f "$CARRIL" ]; then
+      DUENO=$(sed -n 1p "$CARRIL"); DUENO_ARRANQUE=$(sed -n 2p "$CARRIL")
+      VIVO_ARRANQUE=$(arranque_de "$DUENO")
+      if [ "$DUENO" = "$MI_PID" ]; then
+        echo "carril        : YA ERA MÍO  (PID $MI_PID)"
+      elif [ -z "$VIVO_ARRANQUE" ]; then
+        # Un proceso matado no ejecuta limpieza, así que el huérfano ES el caso normal, no el raro.
+        # Se recupera SIN preguntar: un cerrojo que necesita permiso para limpiarse es un carril
+        # en el que no entra nadie, que es la misma avería que un carril que nadie suelta.
+        printf '%s\n%s\n' "$MI_PID" "$MI_ARRANQUE" > "$CARRIL"
+        echo "carril        : RECUPERADO  (el PID $DUENO ya no existe; lo toma $MI_PID)"
+      elif [ "$VIVO_ARRANQUE" != "$DUENO_ARRANQUE" ]; then
+        printf '%s\n%s\n' "$MI_PID" "$MI_ARRANQUE" > "$CARRIL"
+        echo "carril        : RECUPERADO  (el PID $DUENO se reutilizó; lo toma $MI_PID)"
+      elif [ -n "$PID_LANZADOR" ] && [ "$DUENO" = "$PID_LANZADOR" ]; then
+        # EL TESTIGO (Keel v5.8.1). El dueño VIVO del carril es exactamente el PID que el recibo de
+        # ESTE traspaso registra como su lanzador: una sesión que YA hizo su cierre, porque disparar
+        # es lo último que hace. El carril pasa, y se dice como testigo y no como recuperación,
+        # porque aquí no ha fallado nada.
+        #
+        # Existe porque una liberación que depende de que la sesión anterior se porte bien no es un
+        # mecanismo: cubre que la cerraran a la fuerza, que petara tras disparar, o que el proyecto
+        # aún lleve un `keel-continue` anterior a v5.8.1. NO se puede aflojar a «el dueño parece
+        # inactivo» ni a «el dueño es viejo» —eso son conjeturas sobre otra sesión—; esto es la
+        # afirmación firmada del propio lanzador de que ya había terminado.
+        printf '%s\n%s\n' "$MI_PID" "$MI_ARRANQUE" > "$CARRIL"
+        echo "carril        : TESTIGO     (el PID $DUENO lanzó este traspaso y ya cerró; lo toma $MI_PID)"
+      else
+        # Un bloqueo que no dice cómo salir deja al usuario con un interbloqueo y sin vocabulario
+        # para nombrarlo: él es el único que puede cerrar esa ventana.
+        echo "carril        : OCUPADO     (la sesión $DUENO está viva y trabajando en $REAL_RAIZ)"
+        echo "                dueño: PID $DUENO, arrancado $DUENO_ARRANQUE"
+        echo "                para liberarlo: cierra ESA ventana, o ejecuta dentro de ella"
+        echo "                ./scripts/keel-handoff-verify --release"
+        echo
+        echo "VERDICT: STOP   (dos sesiones en un mismo árbol se pisan los commits y se sobrescriben"
+        echo "                docs/PROGRESS.md. No toques nada: díselo al usuario y cierra.)"
+        exit 1
+      fi
+    else
+      printf '%s\n%s\n' "$MI_PID" "$MI_ARRANQUE" > "$CARRIL"
+      echo "carril        : TOMADO      (PID $MI_PID)"
+    fi
+    ;;
+  *"--no-lane"*) echo "carril        : NO RECLAMADO (--no-lane: lo toma la sesión que LLEGUE, nunca la que lanza)" ;;
+  *)             echo "carril        : n/a         (la ficha no dice \`Chaining: start\`)" ;;
+esac
+
+echo "VERDICT: CONTINUE"

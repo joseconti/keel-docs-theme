@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+for f in AGENTS.md CLAUDE.md docs/PROGRESS.md docs/decisions.md docs/keel-conformance.md docs/issues.md docs/sprints/sprint-1.md; do test -s "$f"; done
+for f in AGENTS.md CLAUDE.md; do rg -q 'KEEL:BEGIN — v7.3.2' "$f"; done
+scripts/keel-plan --check
+cmp scripts/keel-clock "${KEEL_SKILL:-$HOME/.codex/skills/keel}/scripts/keel_clock.py"
+diff -qr theme/_theme demo/_theme
+node --check theme/_theme/js/theme.js
+python3 scripts/verify-contrast.py >/dev/null
+git diff --check
+if rg -n '^<<<<<<<|^>>>>>>>|^=======$' theme demo scripts docs --glob '!design-handoff/**'; then echo 'Unresolved conflict marker'; exit 1; fi
+printf 'keel-verify: maintenance controls OK (historical full harness remains deferred in D-014)\n'

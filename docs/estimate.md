@@ -11,3 +11,11 @@ Phases 1-3 were completed before keel management (planning session 2026-07-16 + 
 | **Total remaining** | **2-2.5 h AI** | **~30 min user** |
 
 Token cost: subscription (Claude) — ≈ 0 marginal cost. No client budget (D-008).
+
+
+## Maintenance estimate — 2026-10-29
+
+Sprint1: protocol/ledger reconciliation0.5h, issue1 fix/regression1h, package preparation0.25h,
+coordinator publication/read-back0.25h: **2h AI work plus supervision**. Historical build
+estimates are unchanged. Session actuals come from scripts/keel-time; cross-project parent
+coordination and this project ledger are not to be blindly summed as elapsed time.

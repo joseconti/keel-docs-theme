@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+run=0; full=0
+for arg in "$@"; do case "$arg" in --run) run=1;; --full) full=1;; *) echo "usage: $0 [--run] [--full]" >&2; exit 64;; esac; done
+base="${KEEL_TEST_BASE:-}"
+if [ -z "$base" ]; then base=$(git merge-base HEAD origin/main); fi
+files=$(git diff --name-only "$base" HEAD)
+if [ "$full" = 0 ] && ! printf '%s\n' "$files" | rg -q '^(theme/|demo/|scripts/|tests/)'; then echo 'scope: none — docs only'; exit 0; fi
+echo 'scope: theme runtime and packaging checks'
+if [ "$run" = 1 ]; then scripts/keel-verify; node scripts/verify-reflow.cjs; fi

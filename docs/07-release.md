@@ -29,3 +29,9 @@
 - Confidential-data scan on the staged tree: no findings (CHANGELOG + docs only).
 - No automated suite / `keel-verify` in this project (static theme; `demo/` is the living validation) — as-built since v1.0.0.
 - Published 2026-07-22 (`gh release create v1.0.1 --latest` with both assets). Verified post-publication: `gh release view v1.0.1 --json assets` → `keel-docs-theme-v1.0.1.zip` (755421 bytes), `checksums.txt` (4356 bytes); `repos/joseconti/keel-docs-theme/releases/latest` resolves to tag v1.0.1; `gh release list` marks v1.0.1 as Latest. v1.0.0 re-confirmed carrying its backfilled assets.
+
+## v1.0.2 candidate — 2026-10-29
+
+Approved by owner; publication remains with the coordinating release session. Source carries __THEME_VERSION__; package.sh v1.0.2 stamps the candidate only. Full bounded theme gate: 40 contrast pairs / zero below AA or spec disagreements, JS parser, byte parity, Keel plan/control verification and 74 real local browser assertions pass. Exact packaged assets also pass the same 74 assertions, no JS errors. Original 90b6bbe assets fail 12 of those assertions. Short-viewport band checks use heights300/360/500/900 because the twelve-locale synthetic header is241px; no claim is made that a band can exist below a header taller than its viewport. D-013 VoiceOver tasks remain unverified.
+
+Integrity: docs/verification/v1.0.2-package.json records ZIP and checksum-manifest SHA-256; all46 entries verified and every source theme file compared byte-for-byte after version stamping. Immutable Design handoff diff is empty. Helpers, logs, fixture and docs are excluded from distributable by package.sh. No theme tag, main merge or GitHub release was performed by the candidate worker.
