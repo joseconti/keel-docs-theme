@@ -142,3 +142,17 @@ Target: public repo tree per D-007. The "port" is byte-copy — the handoff arti
 - [x] Every code-side adaptation logged in §9 with design intent intact (A1-A3).
 - [ ] Accessibility: automated/mechanical checks pass (ratios recomputed 0 deviations; skip-link fixed; landmarks/ARIA delivered) — **user-run assistive-technology pass pending** (⚠ flagged for Phase 7 gate).
 - [x] Zero unresolved Design Requests (register empty — no DRs needed).
+
+## Maintenance adaptation — issue #1 (v1.0.2, D-015)
+
+The immutable Design handoff remains unchanged. This implementation corrects a responsive defect in the existing header: twelve locale links alongside search overflowed at 320, 390 and 768 CSS px. The header now wraps its tools, locale links and brand within the viewport. JavaScript measures the rendered header rather than assuming 60 px; drawer, heading and scrollspy offsets follow that measurement after font, translation and viewport changes. Without JavaScript the header uses normal flow so native anchors remain visible. Observer margins leave a non-empty band below the header in short viewports.
+
+Change map for this maintenance: runtime CSS/JS → theme/_theme + byte-identical demo/_theme, BUILD-SPEC, architecture, decisions, CHANGELOG, scoped regression evidence and API maintenance documentation. Maintenance control → PROGRESS, decisions, conformance, sprint/plan/session records and helper API. Packaging → CHANGELOG, release record and package checksum proof. No template/i18n/public brand contract changes.
+
+### Testing / Environment requirements
+
+No inbound calls or externally reachable endpoint exists; no tunnel applies. Live browser surface is the local demo loaded from file://, with temporary twelve-locale fixture derived only from fictional Basalt demo content. Node, Chrome and Puppeteer Core are development tools; no browser dependency enters the distributed theme. Environment overrides PUPPETEER and CHROME select existing installations. Commands: node --check theme/_theme/js/theme.js; python3 scripts/verify-contrast.py; diff -qr theme/_theme demo/_theme; node scripts/verify-reflow.cjs; scripts/keel-verify. No native app, database or payment surface. Element classes identify the existing public demo controls; assertions read viewport bounds, measured DOM geometry, drawer aria state, focus and anchor targets.
+
+Real run in playground: unchanged baseline yielded 12 failures / 74 assertions in the twelve-locale fixture (widths 320/390/768, both directions and modes). The identical test is rerun on the corrected source; durable red/green reports live in docs/verification/. The test exercises keyboard search, drawer open/Escape, native anchors with and without JS, and four short viewport heights. D-013 VoiceOver items remain unverified; this regression is not a full accessibility audit.
+
+Short-window review correction (T-005): when header height plus12 reaches viewport height, private data-header-sticky becomes false, activeHeaderOffset and CSS --header-h become0, and header z-index returns auto. The normal-flow header can scroll away, native/JS anchors remain visible, and the drawer starts at0 above the header. Height-only resize recalculates the mode even when header size is unchanged. Regression now includes220 and180px heights, anchor visibility, unobscured drawer/Escape, and sticky restoration at500px. Original6380286 short-window behavior fails before this correction. Earlier300/360 scoped-band evidence is superseded by the stronger84-assertion run.

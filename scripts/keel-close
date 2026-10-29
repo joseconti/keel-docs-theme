@@ -1,0 +1,253 @@
+#!/bin/sh
+# Keel v5.14.0 — el cierre se EJECUTA, no se recita. (UNBREAKABLE)
+#
+# El cierre era una secuencia de once pasos que la sesión recorría a mano, al final de la sesión,
+# con el contexto casi agotado. Son las peores condiciones posibles para seguir una lista, y es el
+# momento en que Keel pedía más disciplina de procedimiento que en ningún otro sitio.
+#
+# Medido en otro proyecto: una sesión escribió el traspaso, siguió trabajando, commiteó dos veces
+# más y nunca lo regeneró. La cabecera apuntaba a un commit dos por detrás de HEAD,
+# `scripts/keel-continue` se negó —correctamente— y el encadenado no salió. **Nueve horas paradas.**
+# La regla que lo habría evitado ya existía, ya era enfática y ya estaba marcada UNBREAKABLE.
+#
+# La respuesta NO es una regla más larga ni una lista para que la sesión marque: una lista que la
+# propia sesión tacha es el mismo tipo de artefacto que acaba de fallar, con más ceremonia. Es la
+# regla que Keel ya aplicaba a las comprobaciones del mensajero —*una sesión nunca las compone ella
+# misma*— aplicada por fin al cierre.
+#
+# EL ORDEN ES EL CONTRATO, y lo es por un motivo: **todos los commits ocurren ANTES de escribir el
+# traspaso, nunca después.**
+#
+#   0. scripts/keel-time end         (horas medidas + fila de docs/sessions.md, Keel v6.0.0)
+#   1. Chequeo anti-confidenciales y commit de todo lo pendiente
+#   2. scripts/keel-verify            (falla -> se para aquí; un sprint no cierra roto)
+#   3. Merge a develop y push
+#   4. Escribir docs/continuation-prompt.md, con Commit:/Tree: leídos de git EN ESE INSTANTE
+#   5. scripts/keel-chain-check       (diagnóstico, nunca un veto)
+#   6. scripts/keel-continue          (si la ficha es prefill/start), relatando lo que imprimió
+#   7. scripts/keel-handoff-verify --release, en todos los caminos
+#
+# NO DECIDE NADA. Se para si `keel-verify` falla, y por nada más: no juzga `Handover:`, no sopesa si
+# encadenar, no interpreta el veredicto de `keel-chain-check`. Esos juicios siguen donde estaban;
+# este script es lo que garantiza que se llega a cada uno.
+#
+# Lo que imprime al final ES la lista de comprobación, y es la única que vale: **una SALIDA,
+# producida por haber hecho el trabajo, en vez de una entrada que se marca de memoria.** Un paso que
+# no corrió no tiene línea; una línea que existe lleva la evidencia que lo prueba.
+#
+# El papeleo de cierre de sprint sigue siendo de la sesión —PROGRESS.md, el fichero de sprint,
+# lecciones, el barrido de issues, la autoauditoría—: son juicios y prosa, no mecánica, y corren
+# ANTES de esto, así que sus commits van dentro del paso 1.
+#
+# Uso: ./scripts/keel-close [--dry-run]
+
+set -u
+
+RAIZ=$(git rev-parse --show-toplevel 2>/dev/null) || { echo "keel-close: esto no es un repositorio git."; exit 2; }
+cd "$RAIZ" || exit 2
+SECO=0; [ "${1:-}" = "--dry-run" ] && SECO=1
+
+EVIDENCIA=""
+apunta() { EVIDENCIA="${EVIDENCIA}$1
+"; }
+titulo() { printf '\n\033[1m%s\033[0m\n' "$1" 2>/dev/null || printf '\n%s\n' "$1"; }
+
+# ---------------------------------------------------------------- 0. reloj (Keel v6.0.0)
+# Antes del commit: `keel-time end` escribe las horas parciales de las slices abiertas y la fila de
+# docs/sessions.md, así que las dos cosas entran en el commit del paso 1 y el informe sale impreso.
+titulo "0 · Reloj de sesión"
+if [ -x scripts/keel-time ]; then
+    if [ "$SECO" = "1" ]; then
+        echo "  (dry-run: no se cierra la sesión)"
+        apunta "0. reloj         : dry-run"
+    elif scripts/keel-time end; then
+        apunta "0. reloj         : sesión cerrada, fila en docs/sessions.md"
+    else
+        echo "  keel-time end no cerró sesión (no había reloj abierto)."
+        apunta "0. reloj         : sin sesión abierta en el reloj"
+    fi
+else
+    echo "  falta scripts/keel-time"
+    apunta "0. reloj         : FALTA scripts/keel-time"
+fi
+
+# ---------------------------------------------------------------- 1. commit
+titulo "1 · Trabajo pendiente"
+PENDIENTE=$(git status --porcelain)
+if [ -n "$PENDIENTE" ]; then
+    N=$(printf '%s\n' "$PENDIENTE" | wc -l | tr -d ' ')
+    echo "  $N fichero(s) sin commitear."
+    # El gate anti-confidenciales de .githooks/pre-commit es la red; aquí se avisa por delante para
+    # que un hallazgo no aparezca por primera vez dentro de un cierre automático.
+    SOSPECHA=$(printf '%s\n' "$PENDIENTE" | awk '{print $2}' | grep -E '\.(env|pem|key|p12|pfx|sql|sqlite)$|id_rsa|credential|secret' || true)
+    if [ -n "$SOSPECHA" ]; then
+        echo "  PARA: ficheros que parecen confidenciales:"
+        printf '    %s\n' $SOSPECHA
+        echo "  Revísalos antes de cerrar. No se commitea nada."
+        exit 1
+    fi
+    if [ "$SECO" = "1" ]; then
+        echo "  (dry-run: no se commitea)"
+    else
+        git add -A
+        git commit -q -m "chore(keel): cierre de sesión — trabajo pendiente commiteado por keel-close" || true
+        echo "  commiteado."
+    fi
+    apunta "1. commit        : $N fichero(s) commiteados"
+else
+    echo "  Nada pendiente."
+    apunta "1. commit        : nada pendiente"
+fi
+
+# ---------------------------------------------------------------- 2. verify
+titulo "2 · scripts/keel-verify"
+if [ -x scripts/keel-verify ]; then
+    SALIDA_VERIFY=$(./scripts/keel-verify 2>&1); COD=$?
+    printf '%s\n' "$SALIDA_VERIFY" | sed 's/^/  /'
+    if [ "$COD" != "0" ]; then
+        echo ""
+        echo "keel-close: keel-verify ha fallado. Un sprint no cierra roto."
+        echo "El cierre SE PARA aquí — es el único caso en que este script decide algo."
+        exit 1
+    fi
+    apunta "2. keel-verify   : OK"
+else
+    echo "  no existe scripts/keel-verify"
+    apunta "2. keel-verify   : ausente"
+fi
+
+# ---------------------------------------------------------------- 3. push
+titulo "3 · Publicar"
+RAMA=$(git rev-parse --abbrev-ref HEAD)
+if [ "$SECO" = "1" ]; then
+    echo "  (dry-run: no se publica)"
+    apunta "3. push          : omitido (dry-run)"
+elif git remote | grep -q .; then
+    if git push -q origin "$RAMA" 2>&1; then
+        echo "  $RAMA publicada."
+        apunta "3. push          : $RAMA -> $(git rev-parse --short HEAD)"
+    else
+        echo "  el push falló; los commits quedan locales."
+        apunta "3. push          : FALLÓ (commits locales)"
+    fi
+else
+    echo "  sin remoto: el trabajo solo existe en esta máquina."
+    apunta "3. push          : SIN REMOTO"
+fi
+
+# ---------------------------------------------------------------- 4. traspaso
+titulo "4 · Traspaso"
+if [ "$SECO" = "1" ]; then
+    echo "  (dry-run: no se escribe)"
+    apunta "4. traspaso      : omitido (dry-run)"
+else
+    # Commit y Tree se leen de git AQUÍ, en el instante de escribir. Nunca de un valor que la
+    # sesión leyera antes, recordara o arrastrara en su contexto: esa es la mitad del fallo medido.
+    COMMIT_AHORA=$(git rev-parse HEAD)
+    TREE_AHORA=$(git status --porcelain | wc -l | tr -d ' ')
+    # El formato lo dicta `keel-handoff-verify`, que compara la cadena LITERAL: «clean» o
+    # «dirty (N files)». Escribir «dirty (N)» produce un traspaso que falla su propia verificacion
+    # por una palabra. Tercer defecto de este mismo script encontrado ejecutandolo (16/08/2026).
+    [ "$TREE_AHORA" = "0" ] && TREE_AHORA="clean" || TREE_AHORA="dirty ($TREE_AHORA files)"
+    mkdir -p docs
+    {
+        echo "# Continuación"
+        echo ""
+        # `Repo:` es el COMMIT RAIZ, y solo eso: `keel-handoff-verify` lo compara como prefijo del
+        # commit raiz real (`git rev-list --max-parents=0`). Escribir aqui la URL del remoto produce
+        # un traspaso que falla su PROPIA verificacion — comprobado el 16/08/2026, y es justo el
+        # tipo de artefacto que parece correcto hasta que se usa.
+        echo "Repo: $(git rev-list --max-parents=0 HEAD 2>/dev/null | sort | head -1)"
+        # Desplazamiento NUMERICO (+0000), nunca la «Z» literal: `keel-handoff-verify` parsea con
+        # `date -j -f "%Y-%m-%dT%H:%M:%S%z"`, y en macOS %z no acepta «Z» — el respaldo `date -d` es
+        # solo de GNU. Con «Z» el traspaso nace ILEGIBLE para su propio verificador. Comprobado el
+        # 16/08/2026 ejecutandolo, no leyendolo.
+        echo "Generated: $(date -u '+%Y-%m-%dT%H:%M:%S+0000')"
+        echo "Keel: $(sed -n 's/.*KEEL:BEGIN — v\([0-9.]*\).*/\1/p' AGENTS.md | head -1)"
+        echo "Commit: $COMMIT_AHORA"
+        echo "Tree: $TREE_AHORA"
+        echo "Position: (ver docs/PROGRESS.md — posición actual)"
+        echo "Handover: escrito por scripts/keel-close"
+        echo ""
+        echo "Lee \`docs/PROGRESS.md\` y continúa desde la posición que marca."
+    } > docs/continuation-prompt.md
+    echo "  escrito con Commit: $(echo "$COMMIT_AHORA" | cut -c1-7) · Tree: $TREE_AHORA"
+    apunta "4. traspaso      : Commit $(echo "$COMMIT_AHORA" | cut -c1-7), Tree $TREE_AHORA"
+fi
+
+# ---------------------------------------------------------------- 5. chain-check
+titulo "5 · scripts/keel-chain-check"
+if [ -x scripts/keel-chain-check ]; then
+    SALIDA_CHAIN=$(./scripts/keel-chain-check 2>&1 | tail -12)
+    printf '%s\n' "$SALIDA_CHAIN" | sed 's/^/  /'
+    apunta "5. chain-check   : $(printf '%s' "$SALIDA_CHAIN" | grep -o 'VERDICT:.*' | head -1)"
+else
+    echo "  no existe"
+    apunta "5. chain-check   : ausente"
+fi
+
+# ---------------------------------------------------------------- 6. continue
+titulo "6 · scripts/keel-continue"
+CHAINING=$(grep -m1 -o 'Chaining: \*\*[a-z]*\*\*' docs/PROGRESS.md 2>/dev/null | sed 's/.*\*\*\(.*\)\*\*/\1/')
+if [ "$SECO" = "1" ]; then
+    echo "  (dry-run: no se dispara)"
+    apunta "6. continue      : omitido (dry-run)"
+elif [ "$CHAINING" = "prefill" ] || [ "$CHAINING" = "start" ]; then
+    if [ -x scripts/keel-continue ]; then
+        SALIDA_CONT=$(./scripts/keel-continue 2>&1)
+        printf '%s\n' "$SALIDA_CONT" | sed 's/^/  /'
+        apunta "6. continue      : $(printf '%s' "$SALIDA_CONT" | head -1)"
+    else
+        echo "  la ficha encadena pero falta scripts/keel-continue"
+        apunta "6. continue      : ausente (la ficha encadena)"
+    fi
+else
+    echo "  la ficha no encadena (Chaining: ${CHAINING:-?}) — nada que disparar."
+    apunta "6. continue      : no aplica (Chaining: ${CHAINING:-?})"
+fi
+
+# ---------------------------------------------------------------- 7. soltar carril
+titulo "7 · Soltar el carril"
+if [ -x scripts/keel-handoff-verify ]; then
+    SALIDA_REL=$(./scripts/keel-handoff-verify --release 2>&1 | head -3)
+    printf '%s\n' "$SALIDA_REL" | sed 's/^/  /'
+    apunta "7. carril        : $(printf '%s' "$SALIDA_REL" | head -1)"
+else
+    echo "  no existe"
+    apunta "7. carril        : ausente"
+fi
+
+# ---------------------------------------------------------------- 8. cierre de ESTA sesión en ESTE commit
+titulo "8 · Registrar cierre de sesión"
+if [ "$SECO" = "1" ]; then
+    echo "  (dry-run: no se registra cierre)"
+    apunta "8. cierre        : omitido (dry-run)"
+elif [ -r scripts/keel-session-pid.sh ]; then
+    . scripts/keel-session-pid.sh
+    ID_SESION=$(keel_session_pid 2>/dev/null || true)
+    CLAVE_REPO=$(printf '%s' "$RAIZ" | shasum 2>/dev/null | cut -c1-16)
+    DIR_CIERRES="${XDG_STATE_HOME:-$HOME/.local/state}/keel/closeouts"
+    if [ -n "$ID_SESION" ] && [ -n "$CLAVE_REPO" ] && mkdir -p "$DIR_CIERRES" 2>/dev/null; then
+        ARCHIVO_CIERRE="$DIR_CIERRES/$CLAVE_REPO-$(printf '%s' "$ID_SESION" | tr -c 'A-Za-z0-9' '-')"
+        TEMP_CIERRE="$ARCHIVO_CIERRE.$$"
+        if git rev-parse HEAD > "$TEMP_CIERRE" && mv "$TEMP_CIERRE" "$ARCHIVO_CIERRE"; then
+            echo "  registrado en HEAD $(git rev-parse --short HEAD)."
+            apunta "8. cierre        : HEAD $(git rev-parse --short HEAD)"
+        else
+            rm -f "$TEMP_CIERRE"
+            echo "  no se pudo registrar; el gancho no encadenará."
+            apunta "8. cierre        : sin registro"
+        fi
+    else
+        echo "  no se pudo identificar la sesión; el gancho no encadenará."
+        apunta "8. cierre        : sin identidad"
+    fi
+fi
+
+# ---------------------------------------------------------------- resumen
+titulo "Lo que se ha hecho"
+printf '%s' "$EVIDENCIA" | sed 's/^/  /'
+echo ""
+echo "  Esta lista es una SALIDA, no una casilla marcada de memoria."
+echo "  Un paso que no corrió no tiene línea."
+exit 0

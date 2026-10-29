@@ -15,6 +15,8 @@
   var AUDIENCE = root.getAttribute("data-audience") || null;   // "user" | "dev" | null
   var BASE = root.getAttribute("data-root") || "";             // "" or "../../"
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var activeHeaderOffset = 60;
+  var headerOffsetListeners = [];
 
   function $(s, c) { return (c || doc).querySelector(s); }
   function $all(s, c) { return Array.prototype.slice.call((c || doc).querySelectorAll(s)); }
@@ -125,15 +127,25 @@
       links.forEach(function (a) { a.removeAttribute("aria-current"); });
       if (map[id]) map[id].setAttribute("aria-current", "true");
     }
-    var io = new IntersectionObserver(function (entries) {
-      // choose the topmost heading currently intersecting the upper viewport band
-      var visible = entries.filter(function (e) { return e.isIntersecting; });
-      if (visible.length) {
-        visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
-        setActive(visible[0].target.id);
-      }
-    }, { rootMargin: "-72px 0px -70% 0px", threshold: 0 });
-    targets.forEach(function (el) { io.observe(el); });
+    var io;
+    function observeHeadings() {
+      if (io) io.disconnect();
+      var viewportHeight = window.innerHeight || root.clientHeight;
+      var offset = activeHeaderOffset + 12;
+      var bottom = Math.max(0, Math.min(Math.round(viewportHeight * 0.7), viewportHeight - offset - 1));
+      io = new IntersectionObserver(function (entries) {
+        // choose the topmost heading currently intersecting the upper viewport band
+        var visible = entries.filter(function (e) { return e.isIntersecting; });
+        if (visible.length) {
+          visible.sort(function (a, b) { return a.boundingClientRect.top - b.boundingClientRect.top; });
+          setActive(visible[0].target.id);
+        }
+      }, { rootMargin: "-" + offset + "px 0px -" + bottom + "px 0px", threshold: 0 });
+      targets.forEach(function (el) { io.observe(el); });
+    }
+    observeHeadings();
+    headerOffsetListeners.push(observeHeadings);
+    window.addEventListener("resize", observeHeadings);
 
     // smooth scroll (respect reduced motion) for TOC + in-page anchors
     $all('.toc__link, .heading-anchor').forEach(function (a) {
@@ -142,7 +154,7 @@
         var el = id && doc.getElementById(id);
         if (!el) return;
         e.preventDefault();
-        var top = el.getBoundingClientRect().top + window.pageYOffset - 72;
+        var top = el.getBoundingClientRect().top + window.pageYOffset - activeHeaderOffset - 12;
         window.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
         history.replaceState(null, "", "#" + id);
         el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true });
@@ -384,11 +396,40 @@
     set(root.getAttribute("lang") || "es");
   }
 
+  /* Keep all sticky offsets aligned with a header that can occupy several rows.
+     Font loading, translated controls and viewport changes may alter its height. */
+  function initHeaderHeight() {
+    var header = $(".site-header");
+    if (!header) return;
+    var lastOffset = -1;
+    function update() {
+      var height = Math.ceil(header.getBoundingClientRect().height);
+      // A header that fills the window must scroll away with the page.
+      // Recompute on height-only window resizes even when its own size is unchanged.
+      var sticky = height + 12 < (window.innerHeight || root.clientHeight);
+      var offset = sticky ? height : 0;
+      root.setAttribute("data-header-sticky", String(sticky));
+      if (height > 0 && offset !== lastOffset) {
+        lastOffset = offset;
+        activeHeaderOffset = offset;
+        root.style.setProperty("--header-h", offset + "px");
+        headerOffsetListeners.forEach(function (listener) { listener(); });
+      }
+    }
+    update();
+    if (typeof window.ResizeObserver === "function") {
+      new window.ResizeObserver(update).observe(header);
+    }
+    window.addEventListener("resize", update);
+    if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(update);
+  }
+
   /* =========================================================================
      boot
   ========================================================================= */
   function boot() {
     applyI18n(doc);
+    initHeaderHeight();
     initSidebar();
     initNavGroups();
     initHeadingAnchors();

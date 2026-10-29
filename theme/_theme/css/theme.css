@@ -186,24 +186,29 @@ button{ font:inherit; color:inherit; }
    HEADER / BANNER
 ============================================================================ */
 .site-header{
-  position:sticky; inset-block-start:0; z-index:var(--z-header);
+  position:relative; inset-block-start:0; z-index:auto;
   display:flex; align-items:center; gap:var(--sp-5);
-  height:var(--header-h); padding-inline:var(--sp-6);
+  height:auto; min-block-size:60px; flex-wrap:wrap; padding-inline:var(--sp-6);
   background:var(--color-surface);
   border-block-end:var(--bw) solid var(--color-border-strong);
 }
-.brand{ display:flex; align-items:center; gap:var(--sp-3); text-decoration:none; color:var(--color-heading); }
+[data-header-sticky="true"] .site-header{ position:sticky; z-index:var(--z-header); }
+.brand{ display:flex; align-items:center; gap:var(--sp-3); text-decoration:none; color:var(--color-heading);
+  min-inline-size:0; max-inline-size:100%; }
 .brand:hover{ text-decoration:none; }
 /* logo box: fixed slot the brand layer fills. Contain any aspect ratio. */
 .brand__logo{ display:flex; align-items:center; justify-content:center;
   inline-size:var(--brand-logo-w,28px); block-size:var(--brand-logo-h,28px); flex:none; }
 .brand__logo img,.brand__logo svg{ max-inline-size:100%; max-block-size:100%; inline-size:auto; block-size:auto; }
-.brand__name{ font-family:var(--font-ui); font-weight:600; font-size:var(--fs-16); letter-spacing:-.01em; }
+.brand__name{ font-family:var(--font-ui); font-weight:600; font-size:var(--fs-16); letter-spacing:-.01em; overflow-wrap:anywhere; }
 .brand__version{ font-family:var(--font-mono); font-size:var(--fs-12); color:var(--color-text-secondary);
   border:var(--bw) solid var(--color-border-strong); border-radius:var(--radius-md); padding:2px 6px; }
 
 .header__spacer{ margin-inline-start:auto; }
-.header__tools{ display:flex; align-items:center; gap:var(--sp-4); margin-inline-start:auto; }
+.header__tools{ display:flex; align-items:center; gap:var(--sp-4); margin-inline-start:auto;
+  min-inline-size:0; max-inline-size:100%; flex-wrap:wrap; }
+.header__tools .search{ min-inline-size:0; }
+.header__tools .switcher{ max-inline-size:100%; flex-wrap:wrap; }
 
 /* sidebar drawer trigger (hidden on wide) */
 .nav-toggle{ display:none; align-items:center; justify-content:center; gap:var(--sp-2);
@@ -660,6 +665,11 @@ details.disclosure__body{ padding:0 var(--sp-4) var(--sp-4); }
 }
 @media (max-width:767px){
   :root{ --content-pad:20px; }
+  /* Controls may occupy several rows; theme.js measures the resulting height
+     for the sticky navigation, drawer and heading offsets. */
+  .site-header{ gap:var(--sp-3); padding-block:var(--sp-3); }
+  .header__tools{ flex:1 1 100%; }
+  .header__tools .search{ flex:1 1 180px; }
   .layout{ grid-template-columns:minmax(0,1fr); }
   .nav-toggle{ display:inline-flex; }
   .search{ inline-size:auto; }
@@ -684,8 +694,7 @@ details.disclosure__body{ padding:0 var(--sp-4) var(--sp-4); }
   .search__kbd{ display:none; }
 }
 
-/* text scaling / reflow: content already fluid; ensure no fixed heights clip */
-@media (max-width:767px){ .site-header{ position:sticky; } }
+/* Header rows stay in normal flow without JavaScript; only measured headers stick. */
 
 /* ============================================================================
    REDUCED MOTION

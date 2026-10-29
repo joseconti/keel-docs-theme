@@ -113,3 +113,16 @@
   - **Adopted behaviorally (no artifact):** docs-follow-code for changed/removed surfaces (v3.5.0); AI-development-time language (v4.0.0); accessibility rebalance — keyboard/focus pass is assistant-driven and real AT batched (v5.0.0), though this session's keyboard pass ran manually and found L-003.
 - Baseline advanced to v5.0.0.
 - Supersedes: none. Related: D-011 (v3.1→v3.4 reconciliation + consolidated-docs rationale), D-012, D-013.
+
+
+## D-015 — Scoped v7.3.2 maintenance reconciliation and approved v1.0.2 candidate
+- Date / phase: 2026-10-29 / maintenance.
+- Owner explicitly authorises protocol/work-ledger refresh and later "Corregirla publicando el tema v1.0.2". The coordinating DeCA session separately owns final main/tag/release actions; this worktree prepares a committed candidate and assets only.
+- Apply current lock, measured maintenance sprint/clock/plan/handoff and issue tracking. Preserve D-005 lock-only/no native assistant configuration, D-011 consolidated early phases, D-012 readable non-minified runtime and D-014 broad historical harness/backfill deferral. A bounded bug regression and active maintenance checker do not reconstruct the deferred historical framework.
+- Current autonomy is automatic under the scoped owner authorisation; origin preserves work off-machine. Continuation/publication are supervised by the parent coordinator, so no local launcher, tool registry, smoke or tool settings are installed. New issue capture is not authorised by this task; only existing issue1 is worked. No permanent capture preference is inferred for future unrelated work.
+- Parallel policy remains auto/max; reconciliation precedes the sole ready source fix, both edit aggregate contracts, and a single browser is an exclusive resource. This run is therefore serial with one isolated writer; no worker scheduler assignments are claimed.
+- Keel itself stays v7.3.2; only theme version1.0.2 is approved. Guided VoiceOver remains unverified as previously recorded, not passed by this fix.
+
+Implementation evidence for D-015: twelve-locale public Basalt fixture failed 12/74 assertions on original assets and passed 74/74 on corrected source and exact stamped package. Widths320/390/768/1440, RTL/LTR, light/dark, drawer/Escape/search keyboard, JS/no-JS anchors and shortviewport bands are exercised. Twelve locales yield241px header; band invariant is checked only in taller300/360/500/900 windows. No band below a taller-than-window header is claimed. Public API, immutable Design handoff and theme source placeholders remain unchanged.
+
+T-005 review correction (owner authorised release scope, coordinator review): preserve content in windows shorter than the wrapped header by reverting the header to normal flow, with active offset0 and no header stacking layer above the drawer. Restore sticky mode on height-only resize. This supersedes the earlier decision to restrict short-window tests to heights above the header. No visual redesign or public API change.

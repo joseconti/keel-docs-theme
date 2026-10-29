@@ -1,5 +1,12 @@
 # Changelog — keel-docs-theme
 
+## v1.0.2 — 2026-10-29
+
+- Fix issue #1: multi-locale headers wrap within narrow viewports, with measured drawer, heading-anchor and scrollspy offsets.
+- Keep anchors readable without JavaScript. When the wrapped header fills a short window it scrolls normally, preserving content and drawer access; taller windows restore sticky positioning.
+- Include the previously committed high-contrast keyboard focus-ring correction.
+- Add a standalone synthetic twelve-locale browser regression; runtime remains dependency-free.
+
 ## v1.0.0 — 2026-07-17
 
 Initial release. Art direction **Errata** — an editorial engineering manual brought to the web.
