@@ -1,5 +1,6 @@
 # Keel conformance sweep — keel-docs-theme
 
+> HISTORICAL v5.0.0 sweep; current authoritative sweep is “Current mechanical sweep — v7.3.2” below.
 > Derived mechanically from `MANIFEST.md` (Keel v5.0.0), not from memory.
 > One row per applicable requirement with exactly one state:
 > `present` (where) · `missing` · `deferred`/`declined` (+ D-entry) · `n/a` (+ condition).

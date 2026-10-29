@@ -19,3 +19,5 @@ Sprint1: protocol/ledger reconciliation0.5h, issue1 fix/regression1h, package pr
 coordinator publication/read-back0.25h: **2h AI work plus supervision**. Historical build
 estimates are unchanged. Session actuals come from scripts/keel-time; cross-project parent
 coordination and this project ledger are not to be blindly summed as elapsed time.
+
+T-005 coordinator review correction adds0.25h for a reproduced short-window regression within the approved v1.0.2 repair. Original T-001–T-004 estimates are unchanged. Revised maintenance baseline2.25h AI work plus supervision; completed candidate slices2h estimated, remaining publication T-0040.25h.

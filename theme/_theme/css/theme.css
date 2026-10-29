@@ -186,13 +186,13 @@ button{ font:inherit; color:inherit; }
    HEADER / BANNER
 ============================================================================ */
 .site-header{
-  position:relative; inset-block-start:0; z-index:var(--z-header);
+  position:relative; inset-block-start:0; z-index:auto;
   display:flex; align-items:center; gap:var(--sp-5);
   height:auto; min-block-size:60px; flex-wrap:wrap; padding-inline:var(--sp-6);
   background:var(--color-surface);
   border-block-end:var(--bw) solid var(--color-border-strong);
 }
-[data-header-measured="true"] .site-header{ position:sticky; }
+[data-header-sticky="true"] .site-header{ position:sticky; z-index:var(--z-header); }
 .brand{ display:flex; align-items:center; gap:var(--sp-3); text-decoration:none; color:var(--color-heading);
   min-inline-size:0; max-inline-size:100%; }
 .brand:hover{ text-decoration:none; }

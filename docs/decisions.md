@@ -124,3 +124,5 @@
 - Keel itself stays v7.3.2; only theme version1.0.2 is approved. Guided VoiceOver remains unverified as previously recorded, not passed by this fix.
 
 Implementation evidence for D-015: twelve-locale public Basalt fixture failed 12/74 assertions on original assets and passed 74/74 on corrected source and exact stamped package. Widths320/390/768/1440, RTL/LTR, light/dark, drawer/Escape/search keyboard, JS/no-JS anchors and shortviewport bands are exercised. Twelve locales yield241px header; band invariant is checked only in taller300/360/500/900 windows. No band below a taller-than-window header is claimed. Public API, immutable Design handoff and theme source placeholders remain unchanged.
+
+T-005 review correction (owner authorised release scope, coordinator review): preserve content in windows shorter than the wrapped header by reverting the header to normal flow, with active offset0 and no header stacking layer above the drawer. Restore sticky mode on height-only resize. This supersedes the earlier decision to restrict short-window tests to heights above the header. No visual redesign or public API change.

@@ -15,8 +15,8 @@
   var AUDIENCE = root.getAttribute("data-audience") || null;   // "user" | "dev" | null
   var BASE = root.getAttribute("data-root") || "";             // "" or "../../"
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var headerHeight = 60;
-  var headerHeightListeners = [];
+  var activeHeaderOffset = 60;
+  var headerOffsetListeners = [];
 
   function $(s, c) { return (c || doc).querySelector(s); }
   function $all(s, c) { return Array.prototype.slice.call((c || doc).querySelectorAll(s)); }
@@ -131,7 +131,7 @@
     function observeHeadings() {
       if (io) io.disconnect();
       var viewportHeight = window.innerHeight || root.clientHeight;
-      var offset = headerHeight + 12;
+      var offset = activeHeaderOffset + 12;
       var bottom = Math.max(0, Math.min(Math.round(viewportHeight * 0.7), viewportHeight - offset - 1));
       io = new IntersectionObserver(function (entries) {
         // choose the topmost heading currently intersecting the upper viewport band
@@ -144,7 +144,7 @@
       targets.forEach(function (el) { io.observe(el); });
     }
     observeHeadings();
-    headerHeightListeners.push(observeHeadings);
+    headerOffsetListeners.push(observeHeadings);
     window.addEventListener("resize", observeHeadings);
 
     // smooth scroll (respect reduced motion) for TOC + in-page anchors
@@ -154,7 +154,7 @@
         var el = id && doc.getElementById(id);
         if (!el) return;
         e.preventDefault();
-        var top = el.getBoundingClientRect().top + window.pageYOffset - headerHeight - 12;
+        var top = el.getBoundingClientRect().top + window.pageYOffset - activeHeaderOffset - 12;
         window.scrollTo({ top: top, behavior: reduceMotion ? "auto" : "smooth" });
         history.replaceState(null, "", "#" + id);
         el.setAttribute("tabindex", "-1"); el.focus({ preventScroll: true });
@@ -401,15 +401,19 @@
   function initHeaderHeight() {
     var header = $(".site-header");
     if (!header) return;
-    var lastHeight = 0;
+    var lastOffset = -1;
     function update() {
       var height = Math.ceil(header.getBoundingClientRect().height);
-      if (height > 0 && height !== lastHeight) {
-        lastHeight = height;
-        headerHeight = height;
-        root.style.setProperty("--header-h", height + "px");
-        root.setAttribute("data-header-measured", "true");
-        headerHeightListeners.forEach(function (listener) { listener(); });
+      // A header that fills the window must scroll away with the page.
+      // Recompute on height-only window resizes even when its own size is unchanged.
+      var sticky = height + 12 < (window.innerHeight || root.clientHeight);
+      var offset = sticky ? height : 0;
+      root.setAttribute("data-header-sticky", String(sticky));
+      if (height > 0 && offset !== lastOffset) {
+        lastOffset = offset;
+        activeHeaderOffset = offset;
+        root.style.setProperty("--header-h", offset + "px");
+        headerOffsetListeners.forEach(function (listener) { listener(); });
       }
     }
     update();

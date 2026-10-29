@@ -1,0 +1,67 @@
+{
+  "checks": 84,
+  "failed": 8,
+  "failures": [
+    {
+      "label": "short/220",
+      "detail": {
+        "margin": "-253px 0px -0px 0px",
+        "height": 220,
+        "header": 241
+      }
+    },
+    {
+      "label": "sticky-state/220",
+      "detail": {
+        "position": "sticky",
+        "offset": 241
+      }
+    },
+    {
+      "label": "short-anchor/220",
+      "detail": {
+        "top": 253.046875,
+        "header": 241
+      }
+    },
+    {
+      "label": "short-drawer/220",
+      "detail": {
+        "top": 169,
+        "height": 72,
+        "visible": false
+      }
+    },
+    {
+      "label": "short/180",
+      "detail": {
+        "margin": "-253px 0px -0px 0px",
+        "height": 180,
+        "header": 241
+      }
+    },
+    {
+      "label": "sticky-state/180",
+      "detail": {
+        "position": "sticky",
+        "offset": 241
+      }
+    },
+    {
+      "label": "short-anchor/180",
+      "detail": {
+        "top": 253.046875,
+        "header": 241
+      }
+    },
+    {
+      "label": "short-drawer/180",
+      "detail": {
+        "top": 169,
+        "height": 72,
+        "visible": false
+      }
+    }
+  ],
+  "errors": []
+}

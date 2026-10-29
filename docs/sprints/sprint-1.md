@@ -78,7 +78,7 @@ slices:
     parent_slice: null
     owns: [THEME-V102-PUBLICATION]
     estimate_changes: []
-    depends_on: [T-003]
+    depends_on: [T-003, T-005]
     criteria: [THEME-V102-PUBLICATION]
     execution:
       write_paths: [docs/07-release.md, docs/issues.md, docs/PROGRESS.md, docs/decisions.md, docs/sprints/, docs/.keel/plan.json]
@@ -88,6 +88,28 @@ slices:
       exclusive_resources: [theme-browser]
       parallel: serial
       serial_reason: "Linear maintenance dependency and coordinator-owned state; sole browser"
+  - id: T-005
+    title: "Preserve content when wrapped header fills short viewport"
+    status: done
+    original_hours: 0.25
+    actual_hours: 0.02
+    actual_source: measured
+    residual_hours: 0
+    change_kind: added
+    parent_slice: null
+    owns: [THEME-SHORT-VIEWPORT-FALLBACK]
+    estimate_changes: []
+    depends_on: [T-003]
+    criteria: [THEME-SHORT-VIEWPORT-FALLBACK]
+    execution:
+      write_paths: [theme/_theme/, demo/_theme/, scripts/verify-reflow.cjs, docs/]
+      contracts:
+        reads: [theme-layout-contract]
+        writes: [theme-maintenance-state]
+      exclusive_resources: [theme-browser]
+      parallel: serial
+      serial_reason: "Related edge fix, coordinator review and exclusive browser"
+
 ---
 
 # Maintenance sprint 1

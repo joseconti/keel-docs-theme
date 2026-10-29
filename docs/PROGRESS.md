@@ -51,7 +51,7 @@
 
 ## Current position
 - Phase: 7 done — project in MAINTENANCE (references/maintenance.md)
-- Next action: T-001–T-003 complete: reconciled controls, issue1 fix, 74-assertion red/green and exact v1.0.2 package verified. Parent coordinator owns pending T-004 main integration, tag/release and downloaded-asset read-back. Historical VoiceOver and broad harness deferrals remain outside this task.
+- Next action: T-001–T-003 and T-005 complete: reconciled controls, issue1 fix, 84-assertion red/green including short-window fallback and exact v1.0.2 package verified. Parent coordinator owns pending T-004 main integration, tag/release and downloaded-asset read-back. Historical VoiceOver and broad harness deferrals remain outside this task.
 
 ## Open items
 - Unresolved user questions: none
@@ -64,4 +64,4 @@
 - keel-skill changes to APPLY this theme (guide-theme.md, phase-6, guide-qa, maintenance) — after v1.0.0 release, per docs/PLAN-KEEL-DOCS-THEME.md §4 — NEVER bump keel-skill version without explicit instruction
 - v5.0.0 test-automation harness (keel-doctor, browser drivers, driven tests, keel-verify + checks, 01/02/03/05 back-fill) — deferred per D-014 — revisit if the theme gains runtime behavior; a keel-verify parity check for theme/_theme ≡ demo/_theme is the first candidate
 
-Last updated: 2026-07-23 — maintenance: reconciled to Keel v5.0.0 (D-014, conformance sweep in docs/keel-conformance.md); guided AT pass in progress (K1–K7 done, L-003 fixed; V1–V6 pending)
+Last updated: 2026-10-29 — approved v1.0.2 candidate, issue1 reflow and short-viewport fallback; Keel v7.3.2 reconciliation (D-015). Guided AT: K1–K7 done; V1–V6 remain pending.

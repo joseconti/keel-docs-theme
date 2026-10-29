@@ -3,7 +3,7 @@
 ## v1.0.2 — 2026-10-29
 
 - Fix issue #1: multi-locale headers wrap within narrow viewports, with measured drawer, heading-anchor and scrollspy offsets.
-- Keep anchors readable without JavaScript and preserve a valid observer band in short windows.
+- Keep anchors readable without JavaScript. When the wrapped header fills a short window it scrolls normally, preserving content and drawer access; taller windows restore sticky positioning.
 - Include the previously committed high-contrast keyboard focus-ring correction.
 - Add a standalone synthetic twelve-locale browser regression; runtime remains dependency-free.
 
