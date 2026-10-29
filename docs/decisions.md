@@ -131,3 +131,7 @@ T-005 review correction (owner authorised release scope, coordinator review): pr
 ## D-018 — Publication metadata and tool provenance
 
 Owner explicitly authorises themev1.0.2 publication via coordinating DeCA session. Preserve chronological CHANGELOG order; add upstreamGPLtext/provenance for separate copied maintenance helpers, without changing MIT theme runtime or consumable package scope. Parent performs main integration/tag/release and asset download verification.
+
+## D-019 — Approved v1.0.2 publication verified
+
+Parent owner explicitly approves publication and DeCA consumption. Main557b0e0 tagged v1.0.2, both assets attached, downloaded and verified46/46. T-004 complete; no production DeCA deployment implied. Release verification metadata corrects superseded worker ZIP hash; runtime bytes unchanged after publication.

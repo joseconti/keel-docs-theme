@@ -69,11 +69,11 @@ slices:
       serial_reason: "Linear maintenance dependency and coordinator-owned state; sole browser"
   - id: T-004
     title: "Coordinator publication and release asset read-back"
-    status: not-started
+    status: done
     original_hours: 0.25
-    residual_hours: 0.25
-    actual_hours: 0
+    actual_hours: 0.09
     actual_source: measured
+    residual_hours: 0
     change_kind: added
     parent_slice: null
     owns: [THEME-V102-PUBLICATION]

@@ -37,3 +37,7 @@ Approved by owner; publication remains with the coordinating release session. So
 Integrity: docs/verification/v1.0.2-package.json records ZIP and checksum-manifest SHA-256; all46 entries verified and every source theme file compared byte-for-byte after version stamping. Immutable Design handoff diff is empty. Helpers, logs, fixture and docs are excluded from distributable by package.sh. No theme tag, main merge or GitHub release was performed by the candidate worker.
 
 Candidate revision T-005 supersedes the first ZIP checksum and shortwindow qualification above. Full fixture now84 assertions including220/180 heights, visible JS anchor, unobscured drawer/Escape and restoration of sticky at500 without a header-height change. See current package.json integrity record; release coordinator must use the regenerated package, not the earlier checksum.
+
+## v1.0.2 published — 2026-10-29
+
+Owner-approved main integration557b0e0 and annotated tag v1.0.2. GitHub release published with actual attachments: keel-docs-theme-v1.0.2.zip756597bytes and checksums.txt4356bytes. Downloaded both again; all46 hashes pass. ZIP SHA2568e6b5c95ae80a5fe2502dfec31fe4df2241658bfedc5660335ffce1045cf4255; supersedes worker candidate hash after chronological changelog correction. Source and exact package84/84 browser assertions, no JavaScript errors;40 contrast pairs pass. Helpers/provenance excluded from consumable. Reporter notified on issue1; no reporter closure or VoiceOver conformance claimed.

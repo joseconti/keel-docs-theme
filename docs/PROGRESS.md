@@ -46,12 +46,12 @@
 | 4 Faithful build | done (2026-07-17; A1-A3 logged; AT pass ⚠ pending user) | docs/BUILD-SPEC.md |
 | 5 Development | done (merged into Phase 4: verbatim port + mechanical verification) | docs/BUILD-SPEC.md §10 |
 | 6 Documentation | done (2026-07-17; security.md + accessibility.md 2026-07-22 D-013; threat-model.md + playground.md + rubrics/ + keel-conformance.md 2026-07-23 D-014) | README.md, docs/architecture.md, docs/api/INDEX.md, docs/security.md, docs/accessibility.md, docs/threat-model.md, docs/playground.md, docs/rubrics/visual-fidelity.md, docs/keel-conformance.md |
-| 7 Release | done (v1.0.0 2026-07-17; assets were MISSING on GitHub, backfilled 2026-07-22; v1.0.1 2026-07-22 ships assets, latest) | docs/07-release.md, CHANGELOG.md |
+| 7 Release | done (v1.0.0 2026-07-17; assets were MISSING on GitHub, backfilled 2026-07-22; v1.0.1 2026-07-22 ships assets; v1.0.2 2026-10-29 published with verified assets, latest) | docs/07-release.md, CHANGELOG.md |
 | 8 Website | n/a (no website intent) | — |
 
 ## Current position
 - Phase: 7 done — project in MAINTENANCE (references/maintenance.md)
-- Next action: T-001–T-003 and T-005 complete: reconciled controls, issue1 fix, 84-assertion red/green including short-window fallback and exact v1.0.2 package verified. Parent coordinator owns pending T-004 main integration, tag/release and downloaded-asset read-back. Historical VoiceOver and broad harness deferrals remain outside this task.
+- Next action: T-001–T-003 and T-005 complete: reconciled controls, issue1 fix, 84-assertion red/green including short-window fallback and exact v1.0.2 package verified. T-004 complete: main557b0e0 tagged v1.0.2; release published and both downloaded assets verified (46 checksums). Parent DeCA coordinator now consumes the released theme. Historical VoiceOver and broad harness deferrals remain outside this task.
 
 ## Open items
 - Unresolved user questions: none
