@@ -154,6 +154,29 @@ slices:
       parallel: serial
       serial_reason: "Exclusive browser after coordinating app verifier completes"
 
+
+  - id: T-008
+    title: "Publish owner-approved v1.0.3 and verify downloaded assets"
+    status: in-progress
+    original_hours: 0.5
+    actual_hours: 0
+    actual_source: measured
+    residual_hours: 0.5
+    change_kind: added
+    parent_slice: null
+    owns: [THEME-V103-PUBLICATION]
+    estimate_changes: []
+    depends_on: [T-006, T-007]
+    criteria: [THEME-V103-PUBLICATION]
+    execution:
+      write_paths: [CHANGELOG.md, docs/]
+      contracts:
+        reads: [entry-language-state]
+        writes: [theme-maintenance-state]
+      exclusive_resources: [theme-browser]
+      parallel: serial
+      serial_reason: "Release integration, state and exclusive browser owned by this coordinator"
+
 ---
 
 # Maintenance sprint 1

@@ -18,7 +18,7 @@
 - Models: n/a (no agents configured — Assistant config: none)
 - Keel baseline: v7.3.2 — current mechanical sweep in docs/keel-conformance.md (D-015)
 - Durability: Git remote origin on GitHub (verified this session)
-- Autonomy: automatic for the explicitly approved issue1/v1.0.2 maintenance task (D-015)
+- Autonomy: automatic for the explicitly approved maintenance and v1.0.3 publication task (D-015, D-022)
 - Notify: coordinating DeCA session; no independent out-of-band recipient authorised
 - Chaining: **supervised** — parent DeCA release coordinator owns continuation and publication
 - Chaining model: n/a (supervised)
@@ -51,7 +51,7 @@
 
 ## Current position
 - Phase: 7 done — project in MAINTENANCE (references/maintenance.md)
-- Next action: T-006 and T-007 complete candidate on fix/entry-language-button-aria: native language buttons use aria-pressed, axe8/8 and reflow84/84 pass. Exact asset override8/8 passes; old published asset negative control8/8 fails, proving override selection. Await parent review and separate owner-approved exact version before integration/tag/release. Published v1.0.2 is immutable.
+- Next action: T-008 active: owner approved v1.0.3 publication/consumption (D-022). Integrate, run full gate, package, publish and download-verify. T-006 and T-007 complete candidate on fix/entry-language-button-aria: native language buttons use aria-pressed, axe8/8 and reflow84/84 pass. Exact asset override8/8 passes; old published asset negative control8/8 fails, proving override selection. Exact version approval now recorded in D-022; publication verification remains in progress. Published v1.0.2 is immutable.
 
 ## Open items
 - Unresolved user questions: none

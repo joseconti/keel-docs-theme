@@ -143,3 +143,8 @@ Parent owner explicitly approves publication and DeCA consumption. Main557b0e0 t
 ## D-021 — Exact entry asset verification fixture
 
 2026-10-29. Coordinator requests a release-reproduction helper before any separate version approval. T-007 copies public demo to a disposable directory and optionally replaces its complete _theme unit from THEME_ASSET_ROOT, matching the reflow harness. All8existing assertions and original RED proof remain unchanged. Fixture cleanup always runs, including browser-launch failure. Production code, template placeholders and published v1.0.2 are unchanged; no version/package/tag/release created by this slice.
+
+
+## D-022 — Owner-approved v1.0.3 publication and consumption
+
+2026-10-29. Owner explicitly answers yes to publishing and consuming theme v1.0.3. This authorises integration of T-006/T-007 through develop into main, version1.0.3 packaging, annotated tag and GitHub release with both verified downloadable assets. T-008 owns publication and fresh download verification; the DeCA coordinator owns consumer updates. Published v1.0.2 remains immutable. No production deployment or new assistive-technology result is implied. The existing scoped automatic autonomy applies to this approved release.

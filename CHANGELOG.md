@@ -27,6 +27,6 @@ Release-packaging fix. No changes to the theme itself: `_theme/`, the three temp
 - Include the previously committed high-contrast keyboard focus-ring correction.
 - Add a standalone synthetic twelve-locale browser regression; runtime remains dependency-free.
 
-## Unreleased
+## v1.0.3 — 2026-10-29
 
-- Correct entry language controls to native button aria-pressed semantics. Consumer entry markup must replace aria-selected with aria-pressed along with updating JS. No version assigned; published v1.0.2 unchanged.
+- Correct entry language controls to native button aria-pressed semantics. Consumer entry markup must replace aria-selected with aria-pressed along with updating JS. Published v1.0.2 remains immutable.
