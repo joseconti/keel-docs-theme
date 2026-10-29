@@ -117,3 +117,5 @@ slices:
 Hours are AI work plus supervision. Publication is owned by the parent DeCA release coordinator;
 this worker prepares a tested, committed branch and package only. Historical D-011/D-014
 consolidation and harness deferrals remain recorded; no completed phase is reconstructed.
+
+Publication checkpoint: D-018 records chronological changelog and separate Keel tool licensing; consumable theme runtime remains MIT.

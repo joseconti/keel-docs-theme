@@ -1,0 +1,3 @@
+keel-docs-theme runtime, templates and examples are licensed under MIT; bundled fonts retain SIL OFL terms in their font license files.
+
+Maintenance tooling copied from Keel (https://github.com/joseconti/keel-skill), notably canonical keel-clock and keel-parallel helpers, retains the upstream GNU GPL version3 terms in scripts/KEEL-LICENSE.txt. This tooling is outside theme/ and is not included in the consumable theme ZIP. This notice does not change the license of the theme runtime.
